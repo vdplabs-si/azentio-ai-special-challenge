@@ -38,6 +38,8 @@ export const PATCH = withApi(async ({ req }) => {
     data.passwordHash = await hashPassword(input.newPassword);
   }
   await db.user.update({ where: { id: actor.user.id }, data });
+  // A password change signs out every other device; the current session stays.
+  if (data.passwordHash) await db.session.deleteMany({ where: { userId: actor.user.id, id: { not: actor.sessionId! } } });
   await audit({
     actorId: actor.user.id,
     action: "profile.update",
