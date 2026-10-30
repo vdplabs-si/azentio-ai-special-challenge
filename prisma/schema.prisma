@@ -1,0 +1,1194 @@
+// azentio.ai — Website & Intelligent Collaboration Portal
+// PostgreSQL (Voroa Managed Postgres in production). All IDs are cuid strings.
+// Tenancy: every private record is owned by an Organisation (workspace). Access is
+// decided server-side in src/lib/authz — never from client-supplied tenant IDs.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────────── Identity ─────────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  DEACTIVATED
+}
+
+model User {
+  id              String     @id @default(cuid())
+  email           String     @unique // stored lower-case
+  name            String
+  title           String?
+  image           String?
+  passwordHash    String? // argon2id; null for passwordless / OAuth-only accounts
+  emailVerifiedAt DateTime?
+  status          UserStatus @default(ACTIVE)
+  lastLoginAt     DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  accounts            OAuthAccount[]
+  sessions            Session[]
+  memberships         Membership[]
+  roleGrants          RoleGrant[]                @relation("GrantedTo")
+  grantsGiven         RoleGrant[]                @relation("GrantedBy")
+  invitationsSent     Invitation[]               @relation("InvitedBy")
+  invitationsAccepted Invitation[]               @relation("AcceptedBy")
+  projectsOwned       Project[]                  @relation("ProjectOwner")
+  projectMemberships  ProjectMember[]
+  tasksAssigned       Task[]                     @relation("TaskAssignee")
+  tasksCreated        Task[]                     @relation("TaskCreator")
+  taskComments        TaskComment[]
+  discussions         Discussion[]
+  discussionReplies   DiscussionReply[]
+  announcements       Announcement[]
+  documents           Document[]
+  notifications       Notification[]
+  auditEvents         AuditEvent[]
+  observations        Observation[]
+  consents            SharingConsent[]
+  moderationDecisions ModerationDecision[]
+  reportsFiled        ContributionReport[]       @relation("ReportFiler")
+  reportsResolved     ContributionReport[]       @relation("ReportResolver")
+  sharedComments      SharedObservationComment[]
+  observationFeedback ObservationFeedback[]
+  savedSearches       SavedSearch[]
+  bookmarks           Bookmark[]
+  themesCreated       Theme[]
+  ideasOwned          ImprovementIdea[]          @relation("IdeaOwner")
+  ideasCreated        ImprovementIdea[]          @relation("IdeaCreator")
+  ideaStatusChanges   IdeaStatusChange[]
+  contentOwned        ContentItem[]
+  contentFeedback     ContentFeedback[]
+  mediaCreated        MediaAsset[]
+  bannersCreated      Banner[]
+  liveSessions        LiveSession[]
+  experiments         Experiment[]
+  playgroundRuns      PlaygroundRun[]
+  playgroundFeedback  PlaygroundFeedback[]
+  supportGrants       SupportAccessGrant[]       @relation("SupportGrantee")
+  mentions            Mention[]
+  supportTickets      SupportTicket[]
+}
+
+model OAuthAccount {
+  id                String   @id @default(cuid())
+  userId            String
+  provider          String // "google" | "github"
+  providerAccountId String
+  email             String?
+  createdAt         DateTime @default(now())
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Provider access/refresh tokens are intentionally NOT stored: identity only.
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id                   String        @id @default(cuid())
+  tokenHash            String        @unique // sha256 of the opaque cookie token
+  userId               String
+  activeOrganisationId String?
+  userAgent            String?
+  expiresAt            DateTime
+  createdAt            DateTime      @default(now())
+  lastSeenAt           DateTime      @default(now())
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeOrganisation   Organisation? @relation(fields: [activeOrganisationId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum EmailCodePurpose {
+  LOGIN
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+model EmailCode {
+  id         String           @id @default(cuid())
+  email      String
+  purpose    EmailCodePurpose
+  codeHash   String
+  attempts   Int              @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime         @default(now())
+
+  @@index([email, purpose])
+}
+
+// Platform grants are separate, explicit and audited (IAM-02).
+enum PlatformRole {
+  SUPER_ADMIN
+  PORTAL_ADMIN
+  LEARNING_MODERATOR
+  CONTENT_PUBLISHER
+  BROADCAST_PUBLISHER
+  PRODUCT_OWNER
+}
+
+model RoleGrant {
+  id          String       @id @default(cuid())
+  userId      String
+  role        PlatformRole
+  grantedById String?
+  reason      String?
+  createdAt   DateTime     @default(now())
+  revokedAt   DateTime?
+  user        User         @relation("GrantedTo", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy   User?        @relation("GrantedBy", fields: [grantedById], references: [id], onDelete: SetNull)
+
+  @@index([userId, role])
+}
+
+// ───────────────────────────── Tenancy ─────────────────────────────
+
+enum OrganisationType {
+  INTERNAL // Azentio employees
+  CLIENT
+}
+
+enum OrganisationStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+model Organisation {
+  id           String             @id @default(cuid())
+  name         String
+  slug         String             @unique
+  type         OrganisationType
+  status       OrganisationStatus @default(ACTIVE)
+  industry     String?
+  region       String?
+  description  String?
+  termsVersion String             @default("2026-10")
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  memberships       Membership[]
+  invitations       Invitation[]
+  entitlements      Entitlement[]
+  sessions          Session[]
+  projects          Project[]
+  announcements     Announcement[]
+  documents         Document[]
+  observations      Observation[]
+  playgroundRuns    PlaygroundRun[]
+  liveSessionAccess LiveSessionOrganisation[]
+  contentItems      ContentItem[]
+  supportGrants     SupportAccessGrant[]
+  auditEvents       AuditEvent[]
+  supportTickets    SupportTicket[]
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN // workspace admin / client administrator
+  MEMBER
+  VIEWER
+}
+
+enum MembershipStatus {
+  PENDING_APPROVAL // e.g. verified @azentio.com identity awaiting organiser approval
+  INVITED_PENDING_TERMS
+  ACTIVE
+  SUSPENDED
+  REVOKED
+}
+
+model Membership {
+  id                  String           @id @default(cuid())
+  userId              String
+  organisationId      String
+  role                MembershipRole   @default(MEMBER)
+  status              MembershipStatus @default(PENDING_APPROVAL)
+  termsAcceptedAt     DateTime?
+  learningNoticeAckAt DateTime?
+  approvedById        String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation        Organisation     @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organisationId])
+  @@index([organisationId, status])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+model Invitation {
+  id             String           @id @default(cuid())
+  organisationId String
+  email          String
+  role           MembershipRole
+  tokenHash      String           @unique
+  status         InvitationStatus @default(PENDING)
+  expiresAt      DateTime
+  invitedById    String
+  acceptedById   String?
+  acceptedAt     DateTime?
+  createdAt      DateTime         @default(now())
+  organisation   Organisation     @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  invitedBy      User             @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Cascade)
+  acceptedBy     User?            @relation("AcceptedBy", fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@index([organisationId, status])
+  @@index([email])
+}
+
+// Explicit, time-boxed authorisation required before a portal admin may view a
+// client organisation's private content (PDF §03).
+model SupportAccessGrant {
+  id             String       @id @default(cuid())
+  organisationId String
+  granteeId      String
+  reason         String
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  grantee        User         @relation("SupportGrantee", fields: [granteeId], references: [id], onDelete: Cascade)
+
+  @@index([granteeId, organisationId])
+}
+
+// ───────────────────────────── Catalogue & entitlements ─────────────────────────────
+
+enum Audience {
+  PUBLIC
+  EMPLOYEE
+  CLIENT_ALL // every active client member (and employees)
+  CLIENT_ORGS // only listed / owning client organisations (and employees)
+}
+
+model Offering {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  category    String
+  industry    String
+  summary     String
+  description String
+  isPublic    Boolean  @default(true)
+  sandbox     Boolean  @default(false) // has a Playground engine
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entitlements       Entitlement[]
+  observations       Observation[]
+  sharedObservations SharedObservation[]
+  themeOfferings     ThemeOffering[]
+  ideas              ImprovementIdea[]
+  scenarios          PlaygroundScenario[]
+  experiments        Experiment[]
+}
+
+model Entitlement {
+  id             String       @id @default(cuid())
+  organisationId String
+  offeringId     String
+  grantedById    String?
+  expiresAt      DateTime?
+  createdAt      DateTime     @default(now())
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  offering       Offering     @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+
+  @@unique([organisationId, offeringId])
+}
+
+// ───────────────────────────── Public website content ─────────────────────────────
+
+model Banner {
+  id          String    @id @default(cuid())
+  message     String
+  linkLabel   String?
+  linkHref    String?
+  active      Boolean   @default(false)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+}
+
+enum ContentType {
+  INSIGHT
+  RELEASE_NOTE
+  BRIEFING
+  KNOWLEDGE
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model ContentItem {
+  id             String            @id @default(cuid())
+  type           ContentType
+  slug           String            @unique
+  title          String
+  summary        String
+  body           String
+  sourceUrl      String?
+  audience       Audience
+  organisationId String? // set when audience = CLIENT_ORGS (single-org briefing)
+  status         ContentStatus     @default(DRAFT)
+  ownerId        String
+  reviewDueAt    DateTime?
+  publishedAt    DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  owner          User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  organisation   Organisation?     @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  feedback       ContentFeedback[]
+  bookmarks      Bookmark[]
+
+  @@index([type, status, audience])
+}
+
+model ContentFeedback {
+  id            String      @id @default(cuid())
+  contentItemId String
+  userId        String
+  helpful       Boolean
+  comment       String?
+  createdAt     DateTime    @default(now())
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contentItemId, userId])
+}
+
+model MediaAsset {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  url         String // https video URL (e.g. YouTube) — validated server-side
+  audience    Audience
+  published   Boolean  @default(false)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([audience, published])
+}
+
+enum LiveSessionStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+  CANCELLED
+}
+
+model LiveSession {
+  id            String                    @id @default(cuid())
+  title         String
+  description   String
+  startsAt      DateTime
+  endsAt        DateTime?
+  streamUrl     String?
+  recordingUrl  String?
+  audience      Audience
+  status        LiveSessionStatus         @default(SCHEDULED)
+  createdById   String
+  createdAt     DateTime                  @default(now())
+  updatedAt     DateTime                  @updatedAt
+  createdBy     User                      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  organisations LiveSessionOrganisation[]
+
+  @@index([audience, startsAt])
+}
+
+model LiveSessionOrganisation {
+  liveSessionId  String
+  organisationId String
+  liveSession    LiveSession  @relation(fields: [liveSessionId], references: [id], onDelete: Cascade)
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+
+  @@id([liveSessionId, organisationId])
+}
+
+enum InquiryStatus {
+  NEW
+  IN_PROGRESS
+  CLOSED
+}
+
+model DemoRequest {
+  id             String        @id @default(cuid())
+  name           String
+  email          String
+  company        String
+  jobTitle       String?
+  country        String?
+  interest       String // offering slug or "general"
+  message        String
+  consentContact Boolean
+  status         InquiryStatus @default(NEW)
+  createdAt      DateTime      @default(now())
+
+  @@index([status, createdAt])
+}
+
+model HackathonEvent {
+  id               String                  @id @default(cuid())
+  slug             String                  @unique
+  name             String
+  description      String
+  startsAt         DateTime
+  endsAt           DateTime
+  registrationOpen Boolean                 @default(true)
+  createdAt        DateTime                @default(now())
+  registrations    HackathonRegistration[]
+  teams            Project[]
+}
+
+model HackathonRegistration {
+  id              String         @id @default(cuid())
+  eventId         String
+  name            String
+  email           String
+  organisation    String?
+  participantType String // "employee" | "client" | "partner" | "student" | "other"
+  teamName        String?
+  ideaSummary     String?
+  consentContact  Boolean
+  status          InquiryStatus  @default(NEW)
+  createdAt       DateTime       @default(now())
+  event           HackathonEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, email])
+}
+
+// ───────────────────────────── Collaboration: projects, tasks, docs ─────────────────────────────
+
+enum ProjectKind {
+  STANDARD
+  HACKATHON_TEAM
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  ARCHIVED
+}
+
+enum ProjectVisibility {
+  WORKSPACE // every active member of the owning organisation can view
+  PRIVATE // project members only
+}
+
+model Project {
+  id               String            @id @default(cuid())
+  organisationId   String
+  name             String
+  description      String            @default("")
+  kind             ProjectKind       @default(STANDARD)
+  status           ProjectStatus     @default(PLANNING)
+  visibility       ProjectVisibility @default(WORKSPACE)
+  ownerId          String
+  hackathonEventId String?
+  startsAt         DateTime?
+  dueAt            DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  organisation     Organisation      @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  owner            User              @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  hackathonEvent   HackathonEvent?   @relation(fields: [hackathonEventId], references: [id], onDelete: SetNull)
+  members          ProjectMember[]
+  tasks            Task[]
+  discussions      Discussion[]
+  documents        Document[]
+
+  @@index([organisationId, status])
+}
+
+enum ProjectRole {
+  MANAGER
+  CONTRIBUTOR
+  VIEWER
+}
+
+model ProjectMember {
+  projectId String
+  userId    String
+  role      ProjectRole @default(CONTRIBUTOR)
+  createdAt DateTime    @default(now())
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, userId])
+  @@index([userId])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  BLOCKED
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id          String        @id @default(cuid())
+  projectId   String
+  title       String
+  description String        @default("")
+  status      TaskStatus    @default(TODO)
+  priority    Priority      @default(MEDIUM)
+  assigneeId  String?
+  createdById String
+  dueAt       DateTime?
+  completedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee    User?         @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  createdBy   User          @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  comments    TaskComment[]
+
+  @@index([projectId, status])
+  @@index([assigneeId, status])
+}
+
+model TaskComment {
+  id        String        @id @default(cuid())
+  taskId    String
+  authorId  String
+  parentId  String?
+  body      String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  task      Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent    TaskComment?  @relation("TaskCommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   TaskComment[] @relation("TaskCommentThread")
+
+  @@index([taskId, createdAt])
+}
+
+model Discussion {
+  id        String            @id @default(cuid())
+  projectId String
+  authorId  String
+  title     String
+  body      String
+  pinned    Boolean           @default(false)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author    User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replies   DiscussionReply[]
+
+  @@index([projectId, createdAt])
+}
+
+model DiscussionReply {
+  id           String            @id @default(cuid())
+  discussionId String
+  authorId     String
+  parentId     String?
+  body         String
+  createdAt    DateTime          @default(now())
+  discussion   Discussion        @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  author       User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent       DiscussionReply?  @relation("ReplyThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies      DiscussionReply[] @relation("ReplyThread")
+
+  @@index([discussionId, createdAt])
+}
+
+model Mention {
+  id         String   @id @default(cuid())
+  userId     String // mentioned user
+  sourceType String // "task_comment" | "discussion" | "discussion_reply"
+  sourceId   String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Announcement {
+  id             String       @id @default(cuid())
+  organisationId String
+  authorId       String
+  title          String
+  body           String
+  pinned         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  author         User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId, createdAt])
+}
+
+model Document {
+  id             String        @id @default(cuid())
+  organisationId String
+  projectId      String?
+  uploaderId     String
+  filename       String
+  mimeType       String
+  sizeBytes      Int
+  sha256         String
+  createdAt      DateTime      @default(now())
+  organisation   Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  project        Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploader       User          @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  blob           DocumentBlob?
+
+  @@index([organisationId, projectId])
+}
+
+// Bytes live in a separate table so listing documents never loads file content.
+model DocumentBlob {
+  documentId String   @id
+  data       Bytes
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}
+
+model SupportTicket {
+  id             String        @id @default(cuid())
+  organisationId String
+  authorId       String
+  subject        String
+  body           String
+  status         InquiryStatus @default(NEW)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organisation   Organisation  @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([organisationId, status])
+}
+
+// ───────────────────────────── Collective learning ─────────────────────────────
+
+enum ObservationType {
+  MARKET_OBSERVATION
+  EMERGING_TREND
+  PRODUCT_GAP
+  OPERATIONAL_CHALLENGE
+  SUCCESSFUL_PRACTICE
+  IMPROVEMENT_SUGGESTION
+}
+
+enum EvidenceType {
+  ANECDOTAL
+  CLIENT_FEEDBACK
+  INTERNAL_ANALYSIS
+  MARKET_RESEARCH
+  REGULATORY_CHANGE
+}
+
+enum Confidence {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// Community-sharing lifecycle. Transitions are defined in src/server/learning/lifecycle.ts.
+enum ObservationStatus {
+  DRAFT // not proposed to the community (may still be visible within the org via orgVisible)
+  SUBMITTED // proposed for community sharing, awaiting moderation
+  RETURNED // moderator requested clarification
+  PUBLISHED // an approved shared representation exists
+  REJECTED
+  SUSPENDED // temporarily unpublished while a report is investigated
+  WITHDRAWN
+}
+
+// The private source record. Never returned in shared/cross-client payloads.
+model Observation {
+  id             String               @id @default(cuid())
+  organisationId String
+  authorId       String
+  type           ObservationType
+  title          String
+  body           String
+  offeringId     String?
+  industry       String
+  region         String
+  periodStart    DateTime
+  periodEnd      DateTime
+  evidenceType   EvidenceType
+  confidence     Confidence
+  topics         String[]
+  links          String[]
+  orgVisible     Boolean              @default(false) // explicit "share within my organisation" choice
+  status         ObservationStatus    @default(DRAFT)
+  version        Int                  @default(1)
+  sensitiveFlags Json? // automated scan output (not a privacy guarantee)
+  submittedAt    DateTime?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  organisation   Organisation         @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  author         User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  offering       Offering?            @relation(fields: [offeringId], references: [id], onDelete: SetNull)
+  versions       ObservationVersion[]
+  consents       SharingConsent[]
+  decisions      ModerationDecision[]
+  sharedCopies   SharedObservation[]
+
+  @@index([organisationId, status])
+  @@index([authorId])
+  @@index([status, submittedAt])
+}
+
+model ObservationVersion {
+  id            String      @id @default(cuid())
+  observationId String
+  version       Int
+  snapshot      Json // title/body/metadata at submission time
+  createdAt     DateTime    @default(now())
+  observation   Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+
+  @@unique([observationId, version])
+}
+
+// Append-only consent history; (a)–(d) recorded separately (PDF §09).
+model SharingConsent {
+  id                    String      @id @default(cuid())
+  observationId         String
+  version               Int
+  userId                String
+  storeAndProcess       Boolean // (a)
+  publishSharedVersion  Boolean // (b)
+  attributeOrganisation Boolean // (c)
+  futureTraining        Boolean // (d)
+  createdAt             DateTime    @default(now())
+  observation           Observation @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  user                  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([observationId, createdAt])
+}
+
+enum ModerationAction {
+  RETURN_FOR_CLARIFICATION
+  PUBLISH
+  REJECT
+  SUSPEND
+  REINSTATE
+  REMOVE
+}
+
+model ModerationDecision {
+  id            String           @id @default(cuid())
+  observationId String
+  version       Int
+  moderatorId   String
+  action        ModerationAction
+  publicReason  String // shown to the contributor
+  internalNote  String? // never leaves moderator views
+  createdAt     DateTime         @default(now())
+  observation   Observation      @relation(fields: [observationId], references: [id], onDelete: Cascade)
+  moderator     User             @relation(fields: [moderatorId], references: [id], onDelete: Cascade)
+
+  @@index([observationId, createdAt])
+}
+
+enum SharedStatus {
+  PUBLISHED
+  SUSPENDED
+  WITHDRAWN
+  SUPERSEDED
+  REMOVED
+}
+
+// The approved, de-identified shared representation. Only reviewed fields live here.
+model SharedObservation {
+  id                  String                     @id @default(cuid())
+  sourceObservationId String // server-side only — never serialised to clients
+  version             Int
+  type                ObservationType
+  title               String
+  body                String
+  offeringId          String?
+  industry            String
+  region              String // coarsened at publish time
+  periodLabel         String // coarsened, e.g. "2026 H1"
+  periodStart         DateTime // coarsened boundary used for filtering
+  evidenceType        EvidenceType
+  confidence          Confidence
+  topics              String[]
+  attributionLabel    String? // org name only if consented AND approved
+  status              SharedStatus               @default(PUBLISHED)
+  publishedAt         DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+  source              Observation                @relation(fields: [sourceObservationId], references: [id], onDelete: Cascade)
+  offering            Offering?                  @relation(fields: [offeringId], references: [id], onDelete: SetNull)
+  reports             ContributionReport[]
+  comments            SharedObservationComment[]
+  feedback            ObservationFeedback[]
+  bookmarks           Bookmark[]
+  themeEvidence       ThemeEvidence[]
+  ideaEvidence        IdeaEvidence[]
+
+  @@index([status, publishedAt])
+  @@index([sourceObservationId])
+}
+
+enum ReportReason {
+  MISLEADING
+  CONFIDENTIAL
+  INAPPROPRIATE
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED_KEPT
+  RESOLVED_REMOVED
+}
+
+model ContributionReport {
+  id                  String            @id @default(cuid())
+  sharedObservationId String
+  reporterId          String // never disclosed to the contributor
+  reason              ReportReason
+  details             String
+  status              ReportStatus      @default(OPEN)
+  resolvedById        String?
+  decisionNote        String?
+  createdAt           DateTime          @default(now())
+  resolvedAt          DateTime?
+  sharedObservation   SharedObservation @relation(fields: [sharedObservationId], references: [id], onDelete: Cascade)
+  reporter            User              @relation("ReportFiler", fields: [reporterId], references: [id], onDelete: Cascade)
+  resolvedBy          User?             @relation("ReportResolver", fields: [resolvedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+}
+
+enum CommentStatus {
+  VISIBLE
+  HIDDEN
+}
+
+// Comments inherit the shared copy's audience; moderators may hide them.
+model SharedObservationComment {
+  id                  String            @id @default(cuid())
+  sharedObservationId String
+  authorId            String
+  body                String
+  status              CommentStatus     @default(VISIBLE)
+  createdAt           DateTime          @default(now())
+  sharedObservation   SharedObservation @relation(fields: [sharedObservationId], references: [id], onDelete: Cascade)
+  author              User              @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([sharedObservationId, createdAt])
+}
+
+enum FeedbackKind {
+  USEFUL
+  NEEDS_EVIDENCE
+}
+
+model ObservationFeedback {
+  id                  String            @id @default(cuid())
+  sharedObservationId String
+  userId              String
+  kind                FeedbackKind
+  createdAt           DateTime          @default(now())
+  sharedObservation   SharedObservation @relation(fields: [sharedObservationId], references: [id], onDelete: Cascade)
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sharedObservationId, userId])
+}
+
+model SavedSearch {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  query     Json // filter object, re-run live under the same visibility rules
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Bookmark {
+  id                  String             @id @default(cuid())
+  userId              String
+  sharedObservationId String?
+  contentItemId       String?
+  createdAt           DateTime           @default(now())
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sharedObservation   SharedObservation? @relation(fields: [sharedObservationId], references: [id], onDelete: Cascade)
+  contentItem         ContentItem?       @relation(fields: [contentItemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sharedObservationId])
+  @@unique([userId, contentItemId])
+}
+
+enum ThemeStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Theme {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  title       String
+  summary     String
+  limitations String            @default("")
+  status      ThemeStatus       @default(DRAFT)
+  createdById String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  createdBy   User              @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  offerings   ThemeOffering[]
+  evidence    ThemeEvidence[]
+  ideas       ImprovementIdea[]
+}
+
+model ThemeOffering {
+  themeId    String
+  offeringId String
+  theme      Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  offering   Offering @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+
+  @@id([themeId, offeringId])
+}
+
+model ThemeEvidence {
+  themeId             String
+  sharedObservationId String
+  addedAt             DateTime          @default(now())
+  theme               Theme             @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  sharedObservation   SharedObservation @relation(fields: [sharedObservationId], references: [id], onDelete: Cascade)
+
+  @@id([themeId, sharedObservationId])
+}
+
+enum IdeaStatus {
+  PROPOSED
+  UNDER_REVIEW
+  PLANNED
+  IN_PROGRESS
+  RELEASED
+  NOT_PROCEEDING
+}
+
+enum IdeaVisibility {
+  INTERNAL
+  SHARED_WITH_PARTICIPANTS
+}
+
+model ImprovementIdea {
+  id               String             @id @default(cuid())
+  title            String
+  problemStatement String
+  proposedOutcome  String
+  offeringId       String
+  themeId          String?
+  ownerId          String
+  team             String
+  priority         Priority           @default(MEDIUM) // internal only
+  status           IdeaStatus         @default(PROPOSED)
+  visibility       IdeaVisibility     @default(INTERNAL)
+  publicStatusNote String             @default("") // audience-appropriate update
+  internalNotes    String             @default("") // employee-only
+  createdById      String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  offering         Offering           @relation(fields: [offeringId], references: [id], onDelete: Restrict)
+  theme            Theme?             @relation(fields: [themeId], references: [id], onDelete: SetNull)
+  owner            User               @relation("IdeaOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  createdBy        User               @relation("IdeaCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  evidence         IdeaEvidence[]
+  statusChanges    IdeaStatusChange[]
+
+  @@index([status, visibility])
+}
+
+model IdeaEvidence {
+  ideaId              String
+  sharedObservationId String
+  idea                ImprovementIdea   @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  sharedObservation   SharedObservation @relation(fields: [sharedObservationId], references: [id], onDelete: Cascade)
+
+  @@id([ideaId, sharedObservationId])
+}
+
+model IdeaStatusChange {
+  id          String          @id @default(cuid())
+  ideaId      String
+  fromStatus  IdeaStatus?
+  toStatus    IdeaStatus
+  note        String          @default("")
+  changedById String
+  createdAt   DateTime        @default(now())
+  idea        ImprovementIdea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  changedBy   User            @relation(fields: [changedById], references: [id], onDelete: Cascade)
+
+  @@index([ideaId, createdAt])
+}
+
+// ───────────────────────────── Employee innovation ─────────────────────────────
+
+enum ExperimentStatus {
+  SUBMITTED
+  IN_REVIEW
+  ACCEPTED
+  ARCHIVED
+}
+
+model Experiment {
+  id         String           @id @default(cuid())
+  title      String
+  hypothesis String
+  approach   String
+  offeringId String?
+  authorId   String
+  status     ExperimentStatus @default(SUBMITTED)
+  feedback   String           @default("")
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  offering   Offering?        @relation(fields: [offeringId], references: [id], onDelete: SetNull)
+  author     User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+enum ScenarioAudience {
+  EMPLOYEE
+  CLIENT_ENTITLED // requires an Entitlement for the offering
+}
+
+model PlaygroundScenario {
+  id          String           @id @default(cuid())
+  slug        String           @unique
+  offeringId  String
+  name        String
+  description String
+  engine      String // key of a deterministic engine in src/server/playground
+  inputs      Json // synthetic sample inputs
+  audience    ScenarioAudience
+  createdAt   DateTime         @default(now())
+  offering    Offering         @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+  runs        PlaygroundRun[]
+}
+
+model PlaygroundRun {
+  id             String               @id @default(cuid())
+  scenarioId     String
+  userId         String
+  organisationId String // active workspace at run time (tenant isolation)
+  inputs         Json
+  outputs        Json
+  createdAt      DateTime             @default(now())
+  scenario       PlaygroundScenario   @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation   Organisation         @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  feedback       PlaygroundFeedback[]
+
+  @@index([organisationId, userId])
+}
+
+model PlaygroundFeedback {
+  id         String        @id @default(cuid())
+  runId      String
+  userId     String
+  usefulness Int // 1–5
+  clarity    Int // 1–5
+  trust      Int // 1–5
+  comment    String        @default("")
+  createdAt  DateTime      @default(now())
+  run        PlaygroundRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, userId])
+}
+
+// ───────────────────────────── Notifications, audit, rate limits ─────────────────────────────
+
+model Notification {
+  id        String               @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime             @default(now())
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outbox    NotificationOutbox[]
+
+  @@index([userId, readAt, createdAt])
+}
+
+enum OutboxStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED_NO_PROVIDER
+}
+
+model NotificationOutbox {
+  id             String       @id @default(cuid())
+  notificationId String
+  channel        String // "email"
+  idempotencyKey String       @unique
+  status         OutboxStatus @default(PENDING)
+  attempts       Int          @default(0)
+  lastError      String?
+  sentAt         DateTime?
+  createdAt      DateTime     @default(now())
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model AuditEvent {
+  id             String        @id @default(cuid())
+  actorId        String?
+  action         String // e.g. "observation.publish", "role.grant"
+  entityType     String
+  entityId       String?
+  organisationId String?
+  metadata       Json?
+  createdAt      DateTime      @default(now())
+  actor          User?         @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  organisation   Organisation? @relation(fields: [organisationId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([organisationId, createdAt])
+  @@index([createdAt])
+}
+
+model RateLimitBucket {
+  key         String   @id // e.g. "login:ip:<hash>"
+  windowStart DateTime
+  count       Int
+
+  @@index([windowStart])
+}

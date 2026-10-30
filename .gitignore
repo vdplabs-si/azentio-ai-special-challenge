@@ -1,3 +1,44 @@
-node_modules/
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+
+# lockfiles: npm's package-lock.json is canonical; bun's is local-only
+bun.lock
+bun.lockb
+yarn.lock
+pnpm-lock.yaml
+
+# testing
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/tests/e2e/.auth/
+
+# next.js
+/.next/
+/out/
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+
+# env files — never commit secrets (public repository)
 .env
-.env*.local
+.env.*
+!.env.example
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+/src/generated/prisma
+
+# generated Prisma client (rebuilt by `prisma generate` / postinstall)
+/src/generated/
