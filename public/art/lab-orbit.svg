@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 520" fill="none">
+  <defs>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#69d393" fill-opacity="0.14"/>
+    </pattern>
+  </defs>
+  <rect width="640" height="520" fill="url(#dots)"/>
+  <g stroke="#69d393" stroke-width="1.25">
+    <ellipse cx="320" cy="260" rx="220" ry="84" stroke-opacity="0.35" transform="rotate(-18 320 260)"/>
+    <ellipse cx="320" cy="260" rx="220" ry="84" stroke-opacity="0.35" transform="rotate(42 320 260)"/>
+    <ellipse cx="320" cy="260" rx="220" ry="84" stroke-opacity="0.35" transform="rotate(102 320 260)"/>
+    <circle cx="320" cy="260" r="54" stroke-opacity="0.6" stroke-dasharray="2 6"/>
+  </g>
+  <circle cx="320" cy="260" r="26" fill="#171b3a" stroke="#5fffbe" stroke-width="2"/>
+  <path d="M310 248h20M313 248v10l-8 14h30l-8-14v-10" stroke="#5fffbe" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#171b3a" stroke="#69d393" stroke-width="1.5">
+    <circle cx="111" cy="328" r="7"/>
+    <circle cx="529" cy="192" r="7"/>
+    <circle cx="484" cy="407" r="7"/>
+    <circle cx="157" cy="113" r="7"/>
+    <circle cx="366" cy="45" r="7"/>
+    <circle cx="274" cy="475" r="7"/>
+  </g>
+  <g fill="#5fffbe">
+    <circle cx="529" cy="192" r="3"/>
+    <circle cx="157" cy="113" r="3"/>
+    <circle cx="274" cy="475" r="3"/>
+  </g>
+</svg>

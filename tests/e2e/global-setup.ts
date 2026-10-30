@@ -10,6 +10,6 @@ export default async function globalSetup() {
   if (!/[?&]schema=(?!public\b)[a-z0-9_]+/i.test(url)) throw new Error("E2E_DATABASE_URL must target a non-public schema (add &schema=e2e).");
   const env = { ...process.env, DATABASE_URL: url, NODE_ENV: "test" as const, SEED_PASSWORD: process.env.E2E_SEED_PASSWORD ?? "E2e-password-2026" };
   for (const cmd of ["npx prisma migrate deploy", "npx tsx prisma/sync-catalogue.ts", "npx tsx prisma/seed.ts"]) {
-    execSync(cmd, { stdio: "inherit", env });
+    execSync(cmd, { stdio: "inherit", env: env as NodeJS.ProcessEnv });
   }
 }

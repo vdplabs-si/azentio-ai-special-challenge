@@ -23,7 +23,7 @@ function poolConfig() {
   if (DATABASE_CA_CERT) ssl = { rejectUnauthorized: true, ca: DATABASE_CA_CERT.replace(/\\n/g, "\n") };
   else if (sslmode && sslmode !== "disable") ssl = { rejectUnauthorized: false };
 
-  return { pool: { connectionString: url.toString(), ssl, max: 10 }, schema };
+  return { pool: { connectionString: url.toString(), ssl, max: 10, connectionTimeoutMillis: 5000, idleTimeoutMillis: 30000 }, schema };
 }
 
 function createClient() {
