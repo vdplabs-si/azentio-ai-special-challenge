@@ -6,7 +6,7 @@
  * Passwords: SEED_PASSWORD if set (≥12 chars), otherwise one random password printed once.
  */
 import { randomBytes } from "node:crypto";
-import { hash } from "@node-rs/argon2";
+import { argon2id } from "hash-wasm";
 import type { MembershipRole, PlatformRole } from "../src/generated/prisma/enums";
 import { createScriptClient } from "./script-client";
 
@@ -21,7 +21,7 @@ const now = new Date();
 const days = (n: number) => new Date(now.getTime() + n * 86_400_000);
 
 async function user(email: string, name: string, title: string) {
-  const passwordHash = await hash(password, { memoryCost: 19456, timeCost: 2, parallelism: 1 });
+  const passwordHash = await argon2id({ password, salt: randomBytes(16), parallelism: 1, iterations: 2, memorySize: 19456, hashLength: 32, outputType: "encoded" });
   return db.user.upsert({
     where: { email },
     update: { passwordHash, emailVerifiedAt: now, status: "ACTIVE" },

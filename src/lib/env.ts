@@ -34,7 +34,8 @@ function load() {
     throw new Error(`Invalid environment configuration — ${issues}`);
   }
   const env = parsed.data;
-  if (isProd) {
+  // Enforced when the server runs; `next build` evaluates modules without production secrets.
+  if (isProd && process.env.NEXT_PHASE !== "phase-production-build") {
     const url = new URL(env.DATABASE_URL);
     const sslmode = url.searchParams.get("sslmode");
     if (!sslmode || !["require", "verify-ca", "verify-full"].includes(sslmode)) {

@@ -157,7 +157,7 @@ tests/unit           bun test (pure logic)      tests/e2e   Playwright
 **Security controls**
 
 - **Sessions:** a 256-bit random token is stored only as a SHA-256 hash. The cookie is HttpOnly, `SameSite=Lax`, `Secure` with the `__Host-` prefix in production, and has a 30-day sliding expiry. Sessions are revoked when a user is deactivated.
-- **Passwords:** Argon2id (OWASP parameters), compared in uniform time for unknown accounts.
+- **Passwords:** Argon2id via WebAssembly (`hash-wasm`, OWASP parameters, no native binary), compared in uniform time for unknown accounts.
 - **One-time codes:** HMAC-hashed, with a 10-minute expiry, 5 attempts and single use.
 - **CSRF:** every mutating `/api/v1` and `/api/auth` request is checked for a same-origin `Origin` header, in addition to `SameSite` cookies.
 - **Rate limiting:** a PostgreSQL-backed fixed window covering login, codes, registration, contact, hackathon, invitations, uploads, AIRA and search.

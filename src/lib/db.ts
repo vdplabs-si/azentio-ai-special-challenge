@@ -34,7 +34,22 @@ function createClient() {
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const db: PrismaClient = globalForPrisma.prisma ?? createClient();
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+function client() {
+  // One pool per process; reused across hot reloads in development.
+  globalForPrisma.prisma ??= createClient();
+  return globalForPrisma.prisma;
+}
+
+/**
+ * Lazily-connected Prisma client: the pool (and env validation) is created on first use,
+ * so `next build` can import route modules without database credentials.
+ */
+export const db = new Proxy({} as PrismaClient, {
+  get(_target, prop) {
+    const c = client();
+    const value = Reflect.get(c, prop, c);
+    return typeof value === "function" ? value.bind(c) : value;
+  },
+});
 
 export type { PrismaClient };

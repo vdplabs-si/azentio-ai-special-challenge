@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
   // Nearly every portal route reads the session, so we use classic request-time rendering.
   cacheComponents: false,
   poweredByHeader: false,
-  serverExternalPackages: ["@node-rs/argon2", "pg"],
+  serverExternalPackages: ["pg"],
   turbopack: {
     rules: {
       "*.css": {
