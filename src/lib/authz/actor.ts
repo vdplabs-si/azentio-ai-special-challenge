@@ -62,7 +62,9 @@ export const getActor = cache(async (): Promise<Actor> => {
     }),
   ]);
 
-  const active = memberships.filter((m) => m.status === "ACTIVE").map(({ status: _s, ...m }) => m);
+  const active = memberships
+    .filter((m) => m.status === "ACTIVE")
+    .map((m) => ({ organisationId: m.organisationId, role: m.role, organisation: m.organisation }));
   const pending = memberships.filter((m) => m.status !== "ACTIVE" && m.status !== "REVOKED");
   const u = session.user;
   const emailVerified = Boolean(u.emailVerifiedAt);
