@@ -184,7 +184,7 @@ export function SectionHeading({ title, description, actions }: { title: string;
 export function Meta({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="min-w-0">
-      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
       <dd className="mt-1 text-sm text-brand-ink">{children}</dd>
     </div>
   );

@@ -55,7 +55,7 @@ export function EmptyState({
 export function StatTile({ label, value, hint, href }: { label: string; value: ReactNode; hint?: ReactNode; href?: string }) {
   const body = (
     <div className="rounded-lg border bg-card p-4 transition-colors hover:border-brand-green/60">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="mt-1 font-heading text-2xl font-bold text-brand-ink">{value}</p>
       {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
     </div>

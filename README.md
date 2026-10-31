@@ -20,8 +20,9 @@ Everything is backed by PostgreSQL (Voroa Managed Postgres), and all access cont
 6. [Architecture](#architecture)
 7. [Roles & access model](#roles--access-model)
 8. [Collective-learning workflow](#collective-learning-workflow)
-9. [Testing](#testing)
-10. [Known limitations](#known-limitations)
+9. [Website design and the 3D scene](#website-design-and-the-3d-scene)
+10. [Testing](#testing)
+11. [Known limitations](#known-limitations)
 
 ---
 
@@ -76,7 +77,7 @@ See [`.env.example`](.env.example). Without the required values the app fails fa
 | `DATABASE_URL` | ✅ | Voroa connection URL. Production refuses to start without `sslmode=require` (or `verify-*`). |
 | `DATABASE_CA_CERT` | – | A PEM CA certificate. Upgrades TLS to full certificate verification. |
 | `AUTH_SECRET` | ✅ | 32+ random characters. Used as the HMAC key for one-time codes and rate-limit keys. |
-| `AUTH_URL` | ✅ in prod | Public base URL. Used for OAuth callbacks, invitation links and the CSRF origin check. |
+| `AUTH_URL` | ✅ in prod | Public base URL, used for OAuth callbacks, invitation links and the CSRF origin check. Must be `https://` in production (plain HTTP is accepted only on loopback). `Secure` / `__Host-` cookies, HSTS and `upgrade-insecure-requests` follow its scheme. HSTS and `upgrade-insecure-requests` are fixed at build time, and if `AUTH_URL` is unset during the build they default to on. |
 | `GOOGLE_CLIENT_ID/SECRET` | – | Enables Google sign-in. |
 | `GITHUB_CLIENT_ID/SECRET` | – | Enables GitHub sign-in. |
 | `RESEND_API_KEY`, `EMAIL_FROM` | prod | Email codes and invitations. Development without a key prints codes to the server console, labelled `[DEV MAIL]`. |
@@ -202,6 +203,37 @@ The generic collaboration roles map onto this model. **Workspace Owner/Admin** a
 
 **Federated learning** (the PDF's optional P2 track) is **not implemented**. Retrieval and summarisation don't retrain any model.
 
+## Website design and the 3D scene
+
+The public site tells one story: **governed collective learning**. The homepage hero shows it in WebGL (three.js via `@react-three/fiber`), driven by scroll:
+
+1. **Contribute.** Each institution is a green point cloud inside its own boundary.
+2. **Review.** Observations travel to a translucent membrane. As they cross it, their positions snap to a coarse grid (de-identification) and they turn mint.
+3. **Share and improve.** They settle into a shared seasonal cash-flow surface (the Build Labs scenario), and pulses travel back to every institution.
+
+Other heroes reuse the same scene in calmer presets:
+
+| Preset | Pages |
+|---|---|
+| `surface` | Products. Each product detail page gets its own deterministic shape |
+| `membrane` | Technology |
+| `institutions` | About and Solutions. The current industry is highlighted |
+| `lab` | AI Lab and Hackathon. You can drag it |
+
+- **Colour carries meaning.** Green is an institution's own data and the primary action. Mint is used *only* for approved, shared learning.
+- **Type.** One variable family, Archivo. Its width axis separates expanded display text from normal-width body text.
+
+**Delivery and fallbacks** (`src/components/three/`):
+- **Server render:** every hero renders an SVG poster first. The scene loads only after `load` plus idle, in a separate chunk (`next/dynamic`, `ssr: false`).
+- **Capability gate:** a silent check decides between the live canvas, a single still frame (`prefers-reduced-motion`) and the poster. The poster is used for Save-Data, no or software-only WebGL2, low-end devices, and page backdrops below 1024 px.
+- **At runtime:**
+  - rendering pauses offscreen and in hidden tabs;
+  - a frame-time governor lowers the particle count and pixel ratio;
+  - a lost WebGL context falls back to the poster.
+- **What it doesn't need:** no textures, workers or network fetches, so the CSP is unchanged.
+- **Import boundary:** an ESLint rule keeps `three` imports inside `src/components/three`, so it never reaches the portal or auth pages.
+- **QA override:** set `localStorage["az:scene"]` to `"force"` (allows software GL) or `"off"`.
+
 ## Testing
 
 ```bash
@@ -217,7 +249,15 @@ The e2e global setup migrates and seeds an **isolated schema**; it refuses to ru
 - protected routes and API 401s;
 - the CSRF origin check and disabled OAuth states;
 - tenant isolation, role restrictions and the collaboration CRUD flows;
-- the full moderation scenario, including withdrawal.
+- the full moderation scenario, including withdrawal;
+- a **portal crawl**: every seeded persona signs in and walks every reachable portal page. It fails on any 5xx response, route-error fallback, uncaught exception or console error;
+- **the 3D scene:**
+  - forced canvas and scroll stages;
+  - a still frame under reduced motion;
+  - silent poster fallbacks for Save-Data and no WebGL;
+  - three.js never loads on auth pages.
+
+`E2E_SERVER=dev` runs the same suites against `next dev`, which surfaces hydration warnings.
 
 ## Known limitations
 

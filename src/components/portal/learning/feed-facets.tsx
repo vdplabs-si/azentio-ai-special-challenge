@@ -59,7 +59,7 @@ function FacetGroup({
   const selected = filters[name];
   return (
     <div>
-      <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</h3>
+      <h3 className="mb-1.5 text-xs font-semibold text-muted-foreground">{label}</h3>
       <ul className="grid gap-0.5">
         {buckets.slice(0, 12).map((b) => {
           const isSelected = selected === b.value;

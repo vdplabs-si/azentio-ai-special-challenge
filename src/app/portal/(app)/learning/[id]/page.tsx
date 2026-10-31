@@ -82,7 +82,7 @@ export default async function SharedContributionPage({ params }: { params: Promi
           <dl className="grid gap-x-6 gap-y-3 rounded-lg border bg-card p-5 text-sm sm:grid-cols-2">
             {meta.map(([label, value]) => (
               <div key={label}>
-                <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
+                <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
                 <dd className="mt-0.5 text-brand-ink">{value}</dd>
               </div>
             ))}

@@ -16,7 +16,6 @@ import {
 import { TECHNOLOGY } from "@/content/site";
 import { CTASection } from "@/components/site/cta-section";
 import { PageHero } from "@/components/site/page-hero";
-import { Reveal } from "@/components/site/reveal";
 import { SectionHeader } from "@/components/site/section-header";
 import { pageMetadata } from "@/components/site/seo";
 
@@ -91,22 +90,19 @@ const LEARNING_FLOW: { icon: LucideIcon; title: string; text: string }[] = [
 export default function TechnologyPage() {
   return (
     <>
-      <PageHero eyebrow={TECHNOLOGY.eyebrow} title={TECHNOLOGY.title} description={<p>{TECHNOLOGY.lead}</p>} art="layers" />
+      <PageHero eyebrow={TECHNOLOGY.eyebrow} title={TECHNOLOGY.title} description={<p>{TECHNOLOGY.lead}</p>} scene="membrane" />
 
       <section aria-labelledby="pillars-heading" className="bg-white py-16 sm:py-20">
         <div className="container-page flex flex-col gap-10">
           <SectionHeader id="pillars-heading" eyebrow="Principles" title="Four commitments behind every product." />
-          <ol className="grid gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
-            {TECHNOLOGY.pillars.map((p, i) => (
+          <ul className="grid gap-px overflow-hidden rounded-[14px] border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
+            {TECHNOLOGY.pillars.map((p) => (
               <li key={p.title} className="flex flex-col gap-3 bg-white p-6">
-                <span aria-hidden="true" className="font-heading text-3xl font-semibold text-success">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="text-lg font-semibold text-brand-ink">{p.title}</h3>
+                <h3 className="type-wide text-lg font-semibold text-brand-ink">{p.title}</h3>
                 <p className="text-sm text-muted-foreground">{p.text}</p>
               </li>
             ))}
-          </ol>
+          </ul>
         </div>
       </section>
 
@@ -132,10 +128,9 @@ export default function TechnologyPage() {
                   }
                 >
                   <p className="flex items-baseline gap-3">
-                    <span className="font-heading text-sm font-semibold text-brand-green">{String(i + 1).padStart(2, "0")}</span>
-                    <span className="font-heading text-lg font-semibold text-white">{layer.title}</span>
+                    <span className="type-wide text-lg font-semibold text-white">{layer.title}</span>
                   </p>
-                  <p className="mt-1 pl-8 text-sm text-slate-300">{layer.text}</p>
+                  <p className="mt-1 text-sm text-slate-300">{layer.text}</p>
                 </li>
               );
             })}
@@ -152,9 +147,9 @@ export default function TechnologyPage() {
             description="The same rules apply to every list, search, count and export in the portal."
           />
           <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {PLATFORM_PRINCIPLES.map(({ icon: Icon, title, text }, i) => (
+            {PLATFORM_PRINCIPLES.map(({ icon: Icon, title, text }) => (
               <li key={title}>
-                <Reveal delay={(i % 3) * 0.05} className="h-full">
+                <div className="h-full">
                   <article className="flex h-full flex-col gap-3 rounded-lg border border-border bg-white p-6">
                     <span className="flex size-10 items-center justify-center rounded-lg bg-accent text-success">
                       <Icon aria-hidden="true" className="size-5" />
@@ -162,7 +157,7 @@ export default function TechnologyPage() {
                     <h3 className="text-lg font-semibold text-brand-ink">{title}</h3>
                     <p className="text-sm text-muted-foreground">{text}</p>
                   </article>
-                </Reveal>
+                </div>
               </li>
             ))}
           </ul>

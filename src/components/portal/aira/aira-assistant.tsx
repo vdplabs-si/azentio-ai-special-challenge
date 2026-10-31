@@ -131,7 +131,7 @@ export function AiraAssistant({ model }: { model: string | null }) {
           </p>
           <AnswerText text={result.answer} citations={result.citations} />
           <div className="grid gap-2 border-t pt-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cited sources</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground">Cited sources</h3>
             {result.citations.length === 0 ? (
               <p className="text-sm text-muted-foreground">The answer did not cite any retrieved source. Treat it as unsupported.</p>
             ) : (

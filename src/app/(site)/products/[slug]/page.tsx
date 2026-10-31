@@ -54,6 +54,8 @@ export default async function ProductPage({ params }: Props) {
         eyebrow={offering.category}
         title={offering.name}
         description={<p>{offering.summary}</p>}
+        scene="surface"
+        sceneSeed={offering.slug}
       >
         <CtaLink href={`/connect?interest=${encodeURIComponent(offering.slug)}`} variant="green">
           Request a demo
@@ -96,11 +98,11 @@ export default async function ProductPage({ params }: Props) {
           <aside aria-label="Product details" className="flex flex-col gap-4">
             <dl className="divide-y divide-border rounded-lg border border-border bg-brand-light text-sm">
               <div className="flex flex-col gap-1 p-5">
-                <dt className="text-xs font-semibold tracking-[0.14em] text-brand-muted uppercase">Portfolio</dt>
+                <dt className="text-sm font-medium text-brand-muted">Portfolio</dt>
                 <dd className="font-medium text-brand-ink">{ai ? "azentio.ai AI offering" : "Azentio enterprise product line"}</dd>
               </div>
               <div className="flex flex-col gap-1 p-5">
-                <dt className="text-xs font-semibold tracking-[0.14em] text-brand-muted uppercase">Industry</dt>
+                <dt className="text-sm font-medium text-brand-muted">Industry</dt>
                 <dd className="font-medium text-brand-ink">
                   {industry ? (
                     <Link href={`/solutions/${industry.slug}`} className="text-brand-navy underline-offset-4 hover:underline">
@@ -114,7 +116,7 @@ export default async function ProductPage({ params }: Props) {
                 </dd>
               </div>
               <div className="flex flex-col gap-1 p-5">
-                <dt className="text-xs font-semibold tracking-[0.14em] text-brand-muted uppercase">Source</dt>
+                <dt className="text-sm font-medium text-brand-muted">Source</dt>
                 <dd>
                   <ExternalLink href={offering.sourceUrl} className="text-brand-navy">
                     {hostLabel(offering.sourceUrl)}

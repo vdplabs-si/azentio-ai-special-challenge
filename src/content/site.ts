@@ -106,7 +106,7 @@ export const FOOTER_COLUMNS: { title: string; links: (NavLink & { external?: boo
   {
     title: "Connect",
     links: [
-      { label: "Request Demo", href: "/connect" },
+      { label: "Request a demo", href: "/connect" },
       { label: "Sign in", href: "/login" },
       { label: "Portal", href: "/portal" },
       { label: "azentio.com", href: AZENTIO.home, external: true },
@@ -121,14 +121,7 @@ export const LEGAL_LINKS: NavLink[] = [
   { label: "Accessibility", href: "/accessibility" },
 ];
 
-// ───────────────────────────── Homepage ─────────────────────────────
-
-export const HERO = {
-  eyebrowPrefix: "Welcome to",
-  title: ["Build Intelligence.", "Create Impact."] as const,
-  lead: "From ideas to intelligent products. From complexity to clarity. From AI potential to meaningful outcomes.",
-  cta: { label: "Explore our products", href: "/products" },
-};
+// ───────────────────────────── Section copy (about, media, live, solutions) ─────────────────────────────
 
 export const WHO_WE_ARE = {
   eyebrow: "Who we are",
@@ -154,12 +147,6 @@ export interface Capability {
   description: string;
   points: string[];
 }
-
-export const CAPABILITIES_INTRO = {
-  eyebrow: "What we do",
-  title: "Intelligence in Every Layer.",
-  description: "Capabilities designed to connect information, intelligence, and action.",
-};
 
 export const CAPABILITIES: Capability[] = [
   {
@@ -206,15 +193,6 @@ export const CAPABILITIES: Capability[] = [
   },
 ];
 
-export const FEATURED_PRODUCT_SLUGS = [
-  "credit-strategy-simulator",
-  "sme-credit-decisioning",
-  "similar-portfolio-intelligence",
-  "riva",
-] as const;
-
-export const FEATURED_INTRO = { eyebrow: "Featured products", title: "Built to Work. Designed to Evolve." };
-
 export const MEDIA_TEASER = {
   eyebrow: "See intelligence in action",
   title: "Don't Just Imagine What AI Can Do.",
@@ -222,21 +200,6 @@ export const MEDIA_TEASER = {
   description: "Explore real product experiences, intelligent workflows, and ideas brought to life through engineering.",
   cta: { label: "Watch product showcases", href: "/media" },
 };
-
-export const TRUST_INTRO = {
-  eyebrow: "Trust by design",
-  title: "Innovation Without Compromising Trust.",
-  description: "Enterprise AI must be as accountable as it is intelligent.",
-};
-
-export const TRUST_PILLARS: { title: string; text: string }[] = [
-  { title: "Identity & SSO", text: "People sign in with a managed identity before they reach anything private." },
-  { title: "Role-Based Access", text: "Permissions follow explicit roles and workspace membership — nothing is granted by default." },
-  { title: "Auditability", text: "Sensitive actions leave an audit record of who did what, and when." },
-  { title: "Data Protection", text: "Each organisation's private data stays inside its own workspace." },
-  { title: "Human Oversight", text: "Recommendations are reviewed and approved by people, not applied silently." },
-  { title: "Secure Deployment", text: "Encrypted connections, strict security headers and controlled releases." },
-];
 
 export const IDEAS_IN_MOTION = {
   eyebrow: "What's happening",
@@ -264,9 +227,6 @@ export interface Recognition {
 }
 
 export const RECOGNITION_SOURCE = AZENTIO.home;
-
-export const RECOGNITION_HIGHLIGHT =
-  "AMLOCK named a Category Leader in Chartis RiskTech AML Transaction Monitoring Solutions 2026, and iMAL named Best Islamic Core Banking Software 2026 at the Global Islamic Finance Awards — among other 2026 recognitions.";
 
 export const RECOGNITIONS: Recognition[] = [
   {
@@ -340,3 +300,37 @@ export const TECHNOLOGY = {
     { title: "Trust, security & governance", text: "SSO, RBAC, encryption, audit and monitoring" },
   ],
 };
+
+// ───────────────────────────── Homepage (governed-flow narrative) ─────────────────────────────
+// Describes what the portal actually enforces (src/server/learning, src/lib/authz); keep in sync.
+
+export const HOME_HERO = {
+  title: "Credit and risk AI that improves from what institutions learn together.",
+  lead: "Your teams share an observation only when you choose to. We review and de-identify it before any other institution sees it, then turn the patterns into product improvements you can follow.",
+} as const;
+
+export const HOME_STEPS = [
+  { title: "Contribute", text: "Each institution's observations stay inside its own workspace until a person decides to share one." },
+  { title: "Review", text: "A moderator removes identifying detail and coarsens region and period, or returns it with questions." },
+  { title: "Share and improve", text: "Approved learning reaches every participating institution and feeds improvement ideas you can follow." },
+] as const;
+
+export const GOVERNANCE = {
+  title: "Governed by design, not by promise",
+  lead: "Every contribution follows the same lifecycle, and every transition is recorded in an audit trail.",
+  lifecycle: [
+    { state: "Draft", text: "Private to its author. Saving never shares anything." },
+    { state: "Submitted", text: "Proposed to the learning community, with consent recorded for this version." },
+    { state: "Reviewed", text: "A moderator redacts, coarsens, returns or rejects it, and tells the author why." },
+    { state: "Published", text: "A separate de-identified copy is shared. The original stays private." },
+  ],
+  withdraw: "Authors can withdraw at any time. A withdrawn copy leaves feeds, search and AI answers immediately.",
+  consents: [
+    "Store and process the observation",
+    "Publish a reviewed, de-identified version",
+    "Name your organisation on the shared copy",
+    "Allow use in future model training",
+  ],
+  consentNote: "Each consent is recorded separately for each version. Joining a workspace is never consent, and no model is trained on contributions today.",
+  cohort: "Theme counts appear only once at least three different institutions have contributed.",
+} as const;

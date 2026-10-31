@@ -1,44 +1,23 @@
 import Link from "next/link";
-import { ArrowRight, Award, BookOpen, CirclePlay, FlaskConical, Radio, Video } from "lucide-react";
 import { AI_OFFERINGS, INDUSTRIES } from "@/content/catalogue";
-import {
-  CAPABILITIES,
-  CAPABILITIES_INTRO,
-  COMPANY_DESCRIPTION,
-  FEATURED_INTRO,
-  FEATURED_PRODUCT_SLUGS,
-  HERO,
-  IDEAS_IN_MOTION,
-  MEDIA_TEASER,
-  RECOGNITION_HIGHLIGHT,
-  REGIONS_LINE,
-  TRUST_INTRO,
-  TRUST_PILLARS,
-  WHO_WE_ARE,
-} from "@/content/site";
+import { COMPANY_DESCRIPTION, GOVERNANCE, HOME_HERO, HOME_STEPS, RECOGNITIONS, RECOGNITION_SOURCE, REGIONS_LINE } from "@/content/site";
 import { log } from "@/lib/log";
-import { CapabilityCard } from "@/components/site/capability-card";
-import { productLinesFor } from "@/components/site/catalogue";
-import { CTASection } from "@/components/site/cta-section";
+import { industryName, productLinesFor } from "@/components/site/catalogue";
 import { CtaLink } from "@/components/site/cta-link";
-import { OfferingCard } from "@/components/site/offering-card";
-import { PageHero } from "@/components/site/page-hero";
-import { Reveal } from "@/components/site/reveal";
-import { SectionHeader } from "@/components/site/section-header";
+import { HomeHero } from "@/components/site/home-hero";
+import { ScenePoster } from "@/components/site/scene-chrome";
 import { SiteBanner, type BannerData } from "@/components/site/site-banner";
 import { pageMetadata } from "@/components/site/seo";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = pageMetadata({
-  title: "azentio.ai — Build Intelligence. Create Impact.",
+  title: "azentio.ai — Credit and risk AI that learns with you",
   absoluteTitle: true,
   description:
-    "Enterprise AI from Azentio for banking, insurance, capital markets and ERP: intelligent decisioning, document intelligence, AI agents and analytics — engineered for trust.",
+    "Enterprise AI from Azentio for banking, insurance, capital markets and ERP, improved through governed, de-identified learning that institutions choose to share.",
   path: "/",
 });
-
-const IDEA_ICONS = [FlaskConical, Radio, BookOpen];
 
 /**
  * The banner is optional: the homepage must render even if the database is unreachable or
@@ -62,274 +41,192 @@ async function loadBanner(): Promise<BannerData | null> {
   }
 }
 
+/** Distinct recognising bodies, in the order Azentio lists them (e.g. "Chartis", "GIFA"). */
+const RECOGNISED_BY = ["Chartis", "Celent", "GIFA", "QKS"].filter((body) => RECOGNITIONS.some((r) => r.detail.includes(body)));
+
 export default async function HomePage() {
   const banner = await loadBanner();
-  const featured = FEATURED_PRODUCT_SLUGS.map((slug) => AI_OFFERINGS.find((o) => o.slug === slug)).filter(
-    (o): o is (typeof AI_OFFERINGS)[number] => Boolean(o),
-  );
 
   return (
     <>
       {banner ? <SiteBanner banner={banner} /> : null}
 
-      <PageHero
-        size="lg"
-        art="network"
-        eyebrow={
+      <HomeHero
+        title={HOME_HERO.title}
+        lead={HOME_HERO.lead}
+        steps={HOME_STEPS.map((s) => ({ ...s }))}
+        poster={<ScenePoster preset="home" />}
+        actions={
           <>
-            {HERO.eyebrowPrefix} <span className="tracking-normal normal-case">azentio.ai</span>
+            <CtaLink href="/connect" variant="green">
+              Request a demo
+            </CtaLink>
+            <CtaLink href="/products" variant="outline-dark">
+              Explore the AI offerings
+            </CtaLink>
           </>
         }
-        title={
-          <>
-            {HERO.title[0]} <span className="block text-brand-green">{HERO.title[1]}</span>
-          </>
-        }
-        description={<p>{HERO.lead}</p>}
-      >
-        <CtaLink href={HERO.cta.href} variant="green">
-          {HERO.cta.label}
-        </CtaLink>
-        <CtaLink href="/connect" variant="outline-dark" arrow={false}>
-          Request a demo
-        </CtaLink>
-      </PageHero>
+      />
 
-      {/* Enterprise portfolio strip */}
-      <section aria-label="Industries Azentio serves" className="border-b border-white/10 bg-brand-navy-deep">
-        <div className="container-page flex flex-col gap-3 py-5 text-sm sm:flex-row sm:items-center sm:gap-6">
-          <p className="shrink-0 text-xs font-semibold tracking-[0.16em] text-slate-400 uppercase">Azentio enterprise portfolio</p>
-          <ul className="flex flex-wrap gap-x-5 gap-y-2">
-            {INDUSTRIES.map((i) => (
-              <li key={i.slug}>
-                <Link
-                  href={`/solutions/${i.slug}`}
-                  className="rounded-sm font-medium text-slate-200 hover:text-brand-green focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-                >
-                  {i.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
+      {/* Recognition — one typographic line, from Azentio's own announcements. */}
+      <section aria-labelledby="recognition" className="border-b border-border bg-brand-light">
+        <div className="container-page flex flex-col gap-2 py-8 sm:flex-row sm:items-baseline sm:justify-between">
+          <p id="recognition" className="type-wide text-lg font-semibold text-brand-ink sm:text-xl">
+            Recognised in 2026 by {RECOGNISED_BY.slice(0, -1).join(", ")} and {RECOGNISED_BY.at(-1)}
+          </p>
+          <a href={RECOGNITION_SOURCE} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-success underline-offset-4 hover:underline">
+            Read the announcements on azentio.com<span className="sr-only"> (opens in a new tab)</span>
+          </a>
         </div>
       </section>
 
-      {/* Who we are */}
-      <section aria-labelledby="who-heading" className="bg-white py-16 sm:py-20 lg:py-24">
-        <div className="container-page grid gap-10 lg:grid-cols-2 lg:gap-16">
-          <Reveal>
-            <SectionHeader id="who-heading" eyebrow={WHO_WE_ARE.eyebrow} title={WHO_WE_ARE.title} />
-            <div className="mt-6 flex max-w-xl flex-col gap-4 text-base text-muted-foreground sm:text-lg">
-              {WHO_WE_ARE.paragraphs.map((p) => (
-                <p key={p}>{p}</p>
-              ))}
+      {/* AI offerings — a typographic index, not a card grid. */}
+      <section aria-labelledby="offerings" className="bg-white py-20 sm:py-24">
+        <div className="container-page">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              <h2 id="offerings" className="type-display text-[clamp(2rem,3.6vw,3rem)] text-brand-ink">
+                Five AI offerings, each with a sandbox on synthetic data
+              </h2>
+              <p className="mt-5 max-w-md text-base leading-relaxed text-brand-muted">
+                Approved clients can try every offering in the portal Playground before anything touches production data. Outputs there are simulations, not credit decisions.
+              </p>
+              <div className="mt-7">
+                <CtaLink href="/products" variant="navy">
+                  Compare all offerings
+                </CtaLink>
+              </div>
             </div>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <ul className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2">
-              {WHO_WE_ARE.pillars.map((p, i) => (
-                <li key={p.title} className="flex flex-col gap-2 bg-white p-6">
-                  <span className="font-heading text-sm font-semibold text-success">{String(i + 1).padStart(2, "0")}</span>
-                  <h3 className="text-base font-semibold text-brand-ink">{p.title}</h3>
-                  <p className="text-sm text-muted-foreground">{p.text}</p>
+            <ul className="divide-y divide-border border-y border-border">
+              {AI_OFFERINGS.map((o) => (
+                <li key={o.slug}>
+                  <Link
+                    href={`/products/${o.slug}`}
+                    className="group grid gap-2 py-7 focus-visible:outline-none sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-x-8"
+                  >
+                    <span className="type-wide text-2xl font-semibold text-brand-ink transition-colors group-hover:text-success group-focus-visible:underline sm:text-[1.75rem]">
+                      {o.name}
+                    </span>
+                    <span className="text-sm text-brand-muted sm:row-span-2 sm:self-center sm:text-right">{industryName(o.industry)}</span>
+                    <span className="max-w-xl text-base text-brand-ink/80">{o.summary}</span>
+                    <span className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-brand-muted sm:col-span-2">
+                      {o.capabilities.map((c) => (
+                        <span key={c}>{c}</span>
+                      ))}
+                    </span>
+                  </Link>
                 </li>
               ))}
             </ul>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* What we do */}
-      <section aria-labelledby="what-heading" className="bg-brand-light py-16 sm:py-20 lg:py-24">
-        <div className="container-page flex flex-col gap-10">
-          <SectionHeader
-            id="what-heading"
-            eyebrow={CAPABILITIES_INTRO.eyebrow}
-            title={CAPABILITIES_INTRO.title}
-            description={CAPABILITIES_INTRO.description}
-          />
-          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {CAPABILITIES.map((c, i) => (
-              <li key={c.key}>
-                <Reveal delay={(i % 3) * 0.06} className="h-full">
-                  <CapabilityCard capability={c} />
-                </Reveal>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* Featured products */}
-      <section aria-labelledby="featured-heading" className="bg-white py-16 sm:py-20 lg:py-24">
-        <div className="container-page flex flex-col gap-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <SectionHeader id="featured-heading" eyebrow={FEATURED_INTRO.eyebrow} title={FEATURED_INTRO.title} />
-            <CtaLink href="/products" variant="outline-light" size="md">
-              View all products
-            </CtaLink>
           </div>
-          <ul className="grid gap-5 md:grid-cols-2">
-            {featured.map((o, i) => (
-              <li key={o.slug}>
-                <Reveal delay={(i % 2) * 0.06} className="h-full">
-                  <OfferingCard offering={o} />
-                </Reveal>
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
 
-      {/* Media teaser */}
-      <section aria-labelledby="media-heading" className="relative overflow-hidden bg-brand-navy py-16 text-white sm:py-20">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[url(/art/dots.svg)] opacity-60" />
-        <div className="container-page relative grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:items-center">
-          <Reveal>
-            <SectionHeader
-              id="media-heading"
-              tone="dark"
-              eyebrow={MEDIA_TEASER.eyebrow}
-              title={
-                <>
-                  {MEDIA_TEASER.title} <span className="text-brand-green">{MEDIA_TEASER.emphasis}</span>
-                </>
-              }
-              description={MEDIA_TEASER.description}
-            />
-            <div className="mt-8">
-              <CtaLink href={MEDIA_TEASER.cta.href} variant="green">
-                {MEDIA_TEASER.cta.label}
-              </CtaLink>
-            </div>
-          </Reveal>
-          <Reveal delay={0.08}>
-            <ul className="grid gap-3">
-              {[
-                { icon: CirclePlay, title: "Product showcases", text: "Approved videos of azentio.ai products and workflows." },
-                { icon: Video, title: "Session recordings", text: "Public azentio.ai Live sessions, once recorded." },
-                { icon: Radio, title: "Upcoming live sessions", text: "Conversations open to everyone, listed on azentio.ai Live." },
-              ].map(({ icon: Icon, title, text }) => (
-                <li key={title} className="flex items-start gap-4 rounded-lg border border-white/10 bg-white/[0.03] p-5">
-                  <Icon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-brand-green" />
-                  <div>
-                    <p className="font-heading font-semibold text-white">{title}</p>
-                    <p className="text-sm text-slate-300">{text}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        </div>
-      </section>
+      {/* Governance — the lifecycle the portal enforces. A real sequence, so it is numbered. */}
+      <section aria-labelledby="governance" className="relative overflow-clip bg-brand-abyss py-20 text-white sm:py-28">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[url(/art/dots.svg)] opacity-30" />
+        <div className="container-page relative">
+          <h2 id="governance" className="type-display max-w-3xl text-[clamp(2rem,3.8vw,3.2rem)]">
+            {GOVERNANCE.title}
+          </h2>
+          <p className="mt-5 max-w-2xl text-lg text-white/75">{GOVERNANCE.lead}</p>
 
-      {/* Trust */}
-      <section aria-labelledby="trust-heading" className="bg-white py-16 sm:py-20 lg:py-24">
-        <div className="container-page flex flex-col gap-10">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <SectionHeader id="trust-heading" eyebrow={TRUST_INTRO.eyebrow} title={TRUST_INTRO.title} description={TRUST_INTRO.description} />
-            <CtaLink href="/technology" variant="outline-light" size="md">
-              How we build for trust
-            </CtaLink>
-          </div>
-          <ol className="grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
-            {TRUST_PILLARS.map((p, i) => (
-              <li key={p.title} className="flex flex-col gap-3 bg-white p-6 sm:p-7">
-                <span aria-hidden="true" className="font-heading text-3xl font-semibold text-success">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="text-lg font-semibold text-brand-ink">{p.title}</h3>
-                <p className="text-sm text-muted-foreground">{p.text}</p>
+          <ol className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+            {GOVERNANCE.lifecycle.map((s, i) => (
+              <li key={s.state} className="relative pt-6">
+                <span aria-hidden="true" className={i < 2 ? "absolute top-0 left-0 h-0.5 w-full bg-brand-green" : "absolute top-0 left-0 h-0.5 w-full bg-brand-mint"} />
+                <p className="flex items-baseline gap-3">
+                  <span className="type-wide text-sm text-white/50 tabular-nums">{i + 1}</span>
+                  <span className="type-wide text-xl font-semibold">{s.state}</span>
+                </p>
+                <p className="mt-2 text-sm leading-relaxed text-white/70">{s.text}</p>
               </li>
             ))}
           </ol>
-        </div>
-      </section>
+          <p className="mt-10 max-w-3xl border-l-2 border-brand-mint pl-4 text-base text-white/85">{GOVERNANCE.withdraw}</p>
 
-      {/* Azentio enterprise portfolio */}
-      <section aria-labelledby="portfolio-heading" className="bg-brand-light py-16 sm:py-20 lg:py-24">
-        <div className="container-page flex flex-col gap-10">
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-end">
-            <SectionHeader id="portfolio-heading" eyebrow="Azentio enterprise portfolio" title="Purpose-built for the industries we serve." />
-            <div className="flex flex-col gap-3 text-base text-muted-foreground">
-              <p>{COMPANY_DESCRIPTION}</p>
-              <p className="text-sm font-medium text-brand-ink">{REGIONS_LINE}.</p>
+          <div className="mt-16 grid gap-10 border-t border-white/10 pt-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+            <div>
+              <h3 className="type-wide text-xl font-semibold">Four separate consents</h3>
+              <p className="mt-3 text-sm leading-relaxed text-white/65">{GOVERNANCE.consentNote}</p>
             </div>
-          </div>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-            {INDUSTRIES.map((ind) => (
-              <li key={ind.slug}>
-                <Link
-                  href={`/solutions/${ind.slug}`}
-                  className="group flex h-full flex-col gap-3 rounded-lg border border-border bg-white p-5 transition-colors hover:border-brand-green/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-                >
-                  <h3 className="text-base font-semibold text-brand-ink">{ind.name}</h3>
-                  <p className="text-sm text-muted-foreground">{ind.tagline}</p>
-                  <p className="mt-auto text-xs text-brand-muted">
-                    {productLinesFor(ind.slug)
-                      .slice(0, 3)
-                      .map((p) => p.name)
-                      .join(" · ")}
-                  </p>
-                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-brand-navy">
-                    Explore
-                    <ArrowRight aria-hidden="true" className="size-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-col gap-4 rounded-lg border border-border bg-white p-6 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-start gap-3">
-              <Award aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-success" />
-              <p className="text-sm text-brand-ink">
-                <span className="font-semibold">Recognised in 2026: </span>
-                {RECOGNITION_HIGHLIGHT}
-              </p>
+            <div className="grid gap-x-10 gap-y-5 sm:grid-cols-2">
+              {GOVERNANCE.consents.map((c, i) => (
+                <p key={c} className="flex gap-3 text-base text-white/85">
+                  <span className="type-wide text-sm font-semibold text-brand-green">{String.fromCharCode(97 + i)}</span>
+                  {c}
+                </p>
+              ))}
+              <p className="text-sm text-white/60 sm:col-span-2">{GOVERNANCE.cohort}</p>
             </div>
-            <CtaLink href="/insights#recognition" variant="outline-light" size="md">
-              See all recognitions
-            </CtaLink>
           </div>
         </div>
       </section>
 
-      {/* Ideas in motion */}
-      <section aria-labelledby="ideas-heading" className="bg-white py-16 sm:py-20 lg:py-24">
-        <div className="container-page flex flex-col gap-10">
-          <SectionHeader id="ideas-heading" eyebrow={IDEAS_IN_MOTION.eyebrow} title={IDEAS_IN_MOTION.title} />
-          <ul className="grid gap-5 md:grid-cols-3">
-            {IDEAS_IN_MOTION.cards.map((card, i) => {
-              const Icon = IDEA_ICONS[i] ?? FlaskConical;
-              return (
-                <li key={card.href}>
-                  <Reveal delay={i * 0.06} className="h-full">
-                    <Link
-                      href={card.href}
-                      className="group flex h-full flex-col overflow-hidden rounded-lg border border-border bg-white transition-colors hover:border-brand-green/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-                    >
-                      <div className="relative flex h-32 items-end bg-brand-navy p-5">
-                        <div aria-hidden="true" className="absolute inset-0 bg-[url(/art/dots.svg)] opacity-70" />
-                        <Icon aria-hidden="true" className="relative size-6 text-brand-green" />
-                      </div>
-                      <div className="flex flex-1 flex-col gap-3 p-6">
-                        <p className="text-xs font-semibold tracking-[0.16em] text-success uppercase">{card.label}</p>
-                        <h3 className="text-xl font-semibold text-balance text-brand-ink">{card.title}</h3>
-                        <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-sm font-semibold text-brand-navy">
-                          {card.cta}
-                          <ArrowRight aria-hidden="true" className="size-4 transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none" />
-                        </span>
-                      </div>
-                    </Link>
-                  </Reveal>
+      {/* Industries — an index of the enterprise portfolio. */}
+      <section aria-labelledby="industries" className="bg-brand-light py-20 sm:py-24">
+        <div className="container-page">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16">
+            <div>
+              <h2 id="industries" className="type-display text-[clamp(2rem,3.4vw,2.8rem)] text-brand-ink">
+                Built on Azentio&rsquo;s enterprise platforms
+              </h2>
+              <p className="mt-5 max-w-md text-base leading-relaxed text-brand-muted">{COMPANY_DESCRIPTION}</p>
+              <p className="mt-4 text-sm font-medium text-brand-ink">{REGIONS_LINE}</p>
+            </div>
+            <ul className="divide-y divide-border border-y border-border">
+              {INDUSTRIES.map((ind) => (
+                <li key={ind.slug}>
+                  <Link href={`/solutions/${ind.slug}`} className="group block py-6 focus-visible:outline-none">
+                    <span className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                      <span className="type-wide text-xl font-semibold text-brand-ink transition-colors group-hover:text-success group-focus-visible:underline">
+                        {ind.name}
+                      </span>
+                      <span className="text-sm text-brand-muted">{ind.tagline}</span>
+                    </span>
+                    <span className="mt-2 block text-sm text-brand-ink/75">
+                      {productLinesFor(ind.slug)
+                        .map((p) => p.name)
+                        .join(", ")}
+                    </span>
+                  </Link>
                 </li>
-              );
-            })}
-          </ul>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
-      <CTASection />
+      {/* Closing — asymmetric: try it, or talk to us. */}
+      <section aria-labelledby="next-steps" className="bg-white py-20 sm:py-24">
+        <div className="container-page grid gap-12 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-16">
+          <div>
+            <h2 id="next-steps" className="type-display text-[clamp(2rem,3.6vw,3rem)] text-brand-ink">
+              See it work on synthetic data first
+            </h2>
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-brand-muted">
+              The AI Lab explains how the Playground runs each offering against labelled synthetic portfolios, and how hackathon teams and live sessions feed the roadmap.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <CtaLink href="/lab" variant="navy">
+                Visit the AI Lab
+              </CtaLink>
+              <CtaLink href="/live" variant="outline-light">
+                Watch live sessions
+              </CtaLink>
+            </div>
+          </div>
+          <div className="rounded-[14px] bg-brand-abyss p-8 text-white sm:p-10">
+            <h3 className="type-wide text-2xl font-semibold">Talk to the team</h3>
+            <p className="mt-3 text-base text-white/75">Tell us about your portfolio and the decision you want to improve. We will reply to the contact you give us.</p>
+            <div className="mt-7">
+              <CtaLink href="/connect" variant="green">
+                Request a demo
+              </CtaLink>
+            </div>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

@@ -53,7 +53,7 @@ export default async function AdminOverviewPage() {
       />
 
       <section aria-labelledby="queue-heading" className="grid gap-3">
-        <h2 id="queue-heading" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 id="queue-heading" className="text-sm font-semibold text-muted-foreground">
           Needs attention
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -69,7 +69,7 @@ export default async function AdminOverviewPage() {
       </section>
 
       <section aria-labelledby="security-heading" className="grid gap-3">
-        <h2 id="security-heading" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 id="security-heading" className="text-sm font-semibold text-muted-foreground">
           Security & accountability
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -100,7 +100,7 @@ export default async function AdminOverviewPage() {
       </section>
 
       <section aria-labelledby="sections-heading" className="grid gap-3">
-        <h2 id="sections-heading" className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <h2 id="sections-heading" className="text-sm font-semibold text-muted-foreground">
           Administration areas
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">

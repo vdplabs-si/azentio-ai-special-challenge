@@ -23,13 +23,13 @@ export function OfferingCard({
   return (
     <article
       className={cn(
-        "group relative flex h-full flex-col gap-4 rounded-lg border border-border bg-white transition-colors focus-within:border-brand-green focus-within:ring-3 focus-within:ring-ring/40 hover:border-brand-green/60",
+        "group relative flex h-full flex-col gap-4 rounded-[14px] border border-border bg-white transition-colors focus-within:border-brand-green focus-within:ring-3 focus-within:ring-ring/40 hover:border-brand-green/60",
         compact ? "p-5" : "p-6",
         className,
       )}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-xs font-semibold tracking-[0.14em] text-success uppercase">{offering.category}</p>
+        <p className="text-sm font-medium text-success">{offering.category}</p>
         {offering.sandbox ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-success">
             <FlaskConical aria-hidden="true" className="size-3" />
@@ -54,7 +54,7 @@ export function OfferingCard({
         {showIndustry ? <span className="text-xs text-brand-muted">{industryName(offering.industry)}</span> : <span />}
         <Link
           href={`/products/${offering.slug}`}
-          className="inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-brand-navy after:absolute after:inset-0 after:rounded-lg focus-visible:outline-none"
+          className="inline-flex items-center gap-1.5 rounded-sm text-sm font-semibold text-brand-navy after:absolute after:inset-0 after:rounded-[14px] focus-visible:outline-none"
         >
           Explore product
           <span className="sr-only">: {offering.name}</span>

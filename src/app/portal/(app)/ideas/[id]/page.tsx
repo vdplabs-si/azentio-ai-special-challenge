@@ -28,7 +28,7 @@ async function orNotFound<T>(p: Promise<T>): Promise<T> {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
       <dd className="mt-0.5 text-sm text-brand-ink">{children}</dd>
     </div>
   );
@@ -62,7 +62,7 @@ export default async function IdeaPage({ params }: { params: Promise<{ id: strin
           </div>
           {idea.publicStatusNote && (
             <div>
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Latest update from the product team</h2>
+              <h2 className="text-xs font-semibold text-muted-foreground">Latest update from the product team</h2>
               <p className="mt-1 whitespace-pre-wrap text-sm text-brand-ink">{idea.publicStatusNote}</p>
             </div>
           )}
@@ -109,11 +109,11 @@ export default async function IdeaPage({ params }: { params: Promise<{ id: strin
         <div className="grid content-start gap-6">
           <section className="grid gap-4 rounded-lg border bg-card p-5">
             <div>
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Problem statement</h2>
+              <h2 className="text-xs font-semibold text-muted-foreground">Problem statement</h2>
               <p className="mt-1 whitespace-pre-wrap text-sm text-brand-ink">{idea.problemStatement}</p>
             </div>
             <div>
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Proposed outcome</h2>
+              <h2 className="text-xs font-semibold text-muted-foreground">Proposed outcome</h2>
               <p className="mt-1 whitespace-pre-wrap text-sm text-brand-ink">{idea.proposedOutcome}</p>
             </div>
             <dl className="grid gap-4 border-t pt-4 sm:grid-cols-2">
@@ -139,7 +139,7 @@ export default async function IdeaPage({ params }: { params: Promise<{ id: strin
           </section>
 
           <section className="rounded-lg border bg-card p-5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Public status note</h2>
+            <h2 className="text-xs font-semibold text-muted-foreground">Public status note</h2>
             <p className="mt-1 whitespace-pre-wrap text-sm text-brand-ink">{idea.publicStatusNote || "No public note yet."}</p>
             <p className="mt-2 text-xs text-muted-foreground">
               {idea.visibility === "SHARED_WITH_PARTICIPANTS" ? "Visible to participants." : "Not visible outside Azentio while the idea is internal."}
@@ -147,7 +147,7 @@ export default async function IdeaPage({ params }: { params: Promise<{ id: strin
           </section>
 
           <section className="rounded-lg border border-brand-navy/20 bg-brand-light p-5">
-            <h2 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-brand-navy">
+            <h2 className="flex items-center gap-1.5 text-xs font-semibold text-brand-navy">
               <Lock className="size-3.5" aria-hidden /> Internal notes — never shown to clients
             </h2>
             <p className="mt-1 whitespace-pre-wrap text-sm text-brand-ink">{idea.internalNotes || "No internal notes."}</p>

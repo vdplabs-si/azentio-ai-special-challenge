@@ -20,14 +20,14 @@ export type CtaVariant = keyof typeof VARIANTS;
 export function ctaClasses(variant: CtaVariant = "navy", size: "md" | "lg" = "lg", className?: string) {
   return cn(
     buttonVariants({ variant: "default" }),
-    "rounded-lg font-semibold",
+    "rounded-md font-semibold",
     size === "lg" ? "h-11 gap-2 px-5 text-sm" : "h-9 gap-1.5 px-3.5 text-sm",
     VARIANTS[variant],
     className,
   );
 }
 
-/** Button-styled link. External links open in a new tab and are announced to screen readers. */
+/** Button-styled link. External links open in a new tab, are announced to screen readers and carry an outbound icon. */
 export function CtaLink({
   href,
   children,
@@ -35,7 +35,7 @@ export function CtaLink({
   size = "lg",
   className,
   external = false,
-  arrow = true,
+  arrow = external,
 }: {
   href: string;
   children: ReactNode;

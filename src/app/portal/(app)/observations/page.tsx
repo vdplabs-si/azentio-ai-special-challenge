@@ -27,7 +27,7 @@ function ObservationRow({ item, showAuthor }: { item: ObservationListItem; showA
     <li className="rounded-lg border border-l-4 border-l-brand-navy bg-card p-4 transition-colors hover:border-brand-navy/40">
       <div className="flex flex-wrap items-center gap-2">
         <ObservationStatusBadge status={item.status} />
-        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{OBSERVATION_TYPE_LABELS[item.type]}</span>
+        <span className="text-xs font-medium text-muted-foreground">{OBSERVATION_TYPE_LABELS[item.type]}</span>
         {item.orgVisible && (
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
             <Users className="size-3.5" aria-hidden /> Visible in organisation

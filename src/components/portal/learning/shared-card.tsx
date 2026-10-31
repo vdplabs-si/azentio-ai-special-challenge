@@ -10,7 +10,7 @@ export function SharedCard({ item, className, compact = false }: { item: SharedD
   return (
     <article className={cn("rounded-lg border border-l-4 border-l-brand-green bg-card p-4 transition-colors hover:border-brand-green/60", className)}>
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span className="font-semibold uppercase tracking-wide text-success">{OBSERVATION_TYPE_LABELS[item.type]}</span>
+        <span className="font-semibold text-success">{OBSERVATION_TYPE_LABELS[item.type]}</span>
         <span aria-hidden>·</span>
         <span>{CONFIDENCE_LABELS[item.confidence]}</span>
         <span aria-hidden>·</span>

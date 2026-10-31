@@ -60,7 +60,7 @@ export function SavedSearches({ items, current, hasFilters }: { items: SavedSear
 
   return (
     <section aria-labelledby="saved-searches-h" className="grid gap-3">
-      <h3 id="saved-searches-h" className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 id="saved-searches-h" className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
         <Bookmark className="size-3.5" aria-hidden /> Saved searches
       </h3>
       {items.length === 0 ? (

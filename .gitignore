@@ -42,3 +42,4 @@ next-env.d.ts
 
 # generated Prisma client (rebuilt by `prisma generate` / postinstall)
 /src/generated/
+/test-results-dev/

@@ -15,7 +15,7 @@ export function SiteFooter() {
             <Wordmark inverted className="text-2xl" />
             <span className="sr-only">, home</span>
           </Link>
-          <p className="font-heading text-lg font-semibold text-white">Build Intelligence. Create Impact.</p>
+          <p className="type-wide text-lg font-semibold text-white">Credit and risk AI that learns with you.</p>
           <p className="text-sm text-slate-300">
             Enterprise AI from Azentio for banking, insurance, capital markets and ERP — with a secure portal for
             employees and clients.
@@ -33,7 +33,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
           {FOOTER_COLUMNS.map((col) => (
             <nav key={col.title} aria-label={`Footer — ${col.title}`}>
-              <h2 className="text-xs font-semibold tracking-[0.18em] text-brand-green uppercase">{col.title}</h2>
+              <h2 className="text-sm font-semibold text-white">{col.title}</h2>
               <ul className="mt-4 flex flex-col gap-2.5">
                 {col.links.map((l) => (
                   <li key={l.href}>

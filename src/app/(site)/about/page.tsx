@@ -31,7 +31,7 @@ export default function AboutPage() {
         eyebrow="About"
         title="Azentio, and the intelligence behind azentio.ai."
         description={<p>{COMPANY_DESCRIPTION}</p>}
-        art="network"
+        scene="institutions"
       >
         <CtaLink href={AZENTIO.home} variant="outline-dark" external>
           Visit azentio.com

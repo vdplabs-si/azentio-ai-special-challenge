@@ -29,7 +29,7 @@ export function SidebarNav({ sections, onNavigate }: { sections: NavSection[]; o
     <nav aria-label="Portal" className="flex flex-col gap-6 px-3 py-4">
       {sections.map((section) => (
         <div key={section.label}>
-          <p className="px-3 pb-2 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-sidebar-foreground/50">{section.label}</p>
+          <p className="px-3 pb-2 text-xs font-medium text-sidebar-foreground/55">{section.label}</p>
           <ul className="flex flex-col gap-0.5">
             {section.items.map((item) => {
               const Icon = ICONS[item.icon] ?? LayoutDashboard;

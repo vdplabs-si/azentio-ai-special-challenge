@@ -32,11 +32,11 @@ export function SectionHeader({
         className,
       )}
     >
-      {eyebrow ? <p className={cn("eyebrow", dark && "text-brand-green")}>{eyebrow}</p> : null}
+      {eyebrow ? <p className={cn("eyebrow", dark && "text-white/65")}>{eyebrow}</p> : null}
       <Heading
         id={id}
         className={cn(
-          "text-3xl font-semibold text-balance sm:text-4xl",
+          "type-display text-[clamp(1.9rem,3.4vw,2.8rem)] text-balance",
           dark ? "text-white" : "text-brand-ink",
         )}
       >

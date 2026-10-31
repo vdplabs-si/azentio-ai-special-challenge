@@ -8,7 +8,6 @@ import { CtaLink } from "@/components/site/cta-link";
 import { ExternalLink } from "@/components/site/external-link";
 import { OfferingCard } from "@/components/site/offering-card";
 import { PageHero } from "@/components/site/page-hero";
-import { Reveal } from "@/components/site/reveal";
 import { SectionHeader } from "@/components/site/section-header";
 import { pageMetadata } from "@/components/site/seo";
 
@@ -31,7 +30,7 @@ export default function ProductsPage() {
             &amp; compliance, insurance and ERP.
           </p>
         }
-        art="network"
+        scene="surface"
       >
         <CtaLink href="#ai-offerings" variant="green">
           azentio.ai offerings
@@ -50,11 +49,11 @@ export default function ProductsPage() {
             description="Explainable intelligence for credit, portfolio and reporting teams. Offerings marked Playground have a guided scenario with synthetic data in the portal."
           />
           <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {AI_OFFERINGS.map((o, i) => (
+            {AI_OFFERINGS.map((o) => (
               <li key={o.slug}>
-                <Reveal delay={(i % 3) * 0.05} className="h-full">
+                <div className="h-full">
                   <OfferingCard offering={o} showIndustry />
-                </Reveal>
+                </div>
               </li>
             ))}
             <li>

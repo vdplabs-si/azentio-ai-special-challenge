@@ -22,7 +22,7 @@ function isActive(pathname: string, href: string) {
 }
 
 const topLink =
-  "inline-flex h-9 items-center gap-1 rounded-md px-3 text-sm font-medium text-brand-ink transition-colors hover:bg-brand-light hover:text-brand-navy focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none aria-[current=page]:text-brand-navy aria-[current=page]:underline aria-[current=page]:decoration-brand-green aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-[10px]";
+  "inline-flex h-9 items-center gap-1 rounded-md px-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/8 hover:text-white focus-visible:ring-3 focus-visible:ring-ring/60 focus-visible:outline-none aria-[current=page]:text-white aria-[current=page]:underline aria-[current=page]:decoration-brand-green aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-[10px]";
 
 function DesktopGroup({ label, items, pathname }: { label: string; items: NavLink[]; pathname: string }) {
   const active = items.some((i) => isActive(pathname, i.href));
@@ -31,12 +31,12 @@ function DesktopGroup({ label, items, pathname }: { label: string; items: NavLin
       <DropdownMenuTrigger
         className={cn(
           topLink,
-          "data-[state=open]:bg-brand-light",
-          active && "text-brand-navy underline decoration-brand-green decoration-2 underline-offset-[10px]",
+          "data-[state=open]:bg-white/8",
+          active && "text-white underline decoration-brand-green decoration-2 underline-offset-[10px]",
         )}
       >
         {label}
-        <ChevronDown aria-hidden="true" className="size-3.5 text-brand-muted transition-transform in-data-[state=open]:rotate-180 motion-reduce:transition-none" />
+        <ChevronDown aria-hidden="true" className="size-3.5 text-white/50 transition-transform in-data-[state=open]:rotate-180 motion-reduce:transition-none" />
         {active ? <span className="sr-only"> (current section)</span> : null}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={8} className="w-80 p-2">
@@ -61,7 +61,7 @@ function MobileNav({ pathname }: { pathname: string }) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon-lg" className="lg:hidden" aria-label="Open menu">
+        <Button variant="ghost" size="icon-lg" className="text-white hover:bg-white/10 hover:text-white lg:hidden" aria-label="Open menu">
           <Menu aria-hidden="true" className="size-5" />
         </Button>
       </SheetTrigger>
@@ -92,7 +92,7 @@ function MobileNav({ pathname }: { pathname: string }) {
           </ul>
           {MAIN_NAV.filter(isNavGroup).map((group) => (
             <div key={group.label} className="flex flex-col gap-1">
-              <p className="px-3 text-xs font-semibold tracking-[0.16em] text-brand-muted uppercase">{group.label}</p>
+              <p className="px-3 text-sm font-medium text-brand-muted">{group.label}</p>
               <ul className="flex flex-col gap-0.5">
                 {group.items.map((item) => (
                   <li key={item.href}>
@@ -110,7 +110,7 @@ function MobileNav({ pathname }: { pathname: string }) {
         <div className="mt-auto flex flex-col gap-2 border-t border-border p-5">
           <SheetClose asChild>
             <Link href="/connect" className={ctaClasses("navy", "lg", "w-full")}>
-              Request Demo
+              Request a demo
             </Link>
           </SheetClose>
           <div className="grid grid-cols-2 gap-2">
@@ -135,13 +135,13 @@ function MobileNav({ pathname }: { pathname: string }) {
 export function SiteHeader() {
   const pathname = usePathname() ?? "/";
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-white">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-abyss text-white">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Link
           href="/"
           className="flex shrink-0 items-center rounded-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
         >
-          <Wordmark className="text-[1.375rem]" />
+          <Wordmark inverted className="text-[1.375rem]" />
           <span className="sr-only">, home</span>
         </Link>
 
@@ -165,14 +165,14 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-1.5 sm:gap-2">
           <Link href="/login" className={cn(topLink, "hidden lg:inline-flex")}>
-            <LogIn aria-hidden="true" className="size-4 text-brand-muted" />
+            <LogIn aria-hidden="true" className="size-4 text-white/60" />
             Sign in
           </Link>
-          <Link href="/portal" className={ctaClasses("outline-light", "md", "hidden lg:inline-flex")}>
+          <Link href="/portal" className={ctaClasses("outline-dark", "md", "hidden lg:inline-flex")}>
             Portal
           </Link>
-          <Link href="/connect" className={ctaClasses("navy", "md", "hidden sm:inline-flex")}>
-            Request Demo
+          <Link href="/connect" className={ctaClasses("green", "md", "hidden sm:inline-flex")}>
+            Request a demo
           </Link>
           <MobileNav pathname={pathname} />
         </div>

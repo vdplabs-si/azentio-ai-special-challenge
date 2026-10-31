@@ -36,7 +36,7 @@ export default async function ModerationQueuePage() {
           {items.map((item) => (
             <li key={item.id} className="rounded-lg border bg-card p-4">
               <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-semibold uppercase tracking-wide text-brand-ink">{OBSERVATION_TYPE_LABELS[item.type]}</span>
+                <span className="font-semibold text-brand-ink">{OBSERVATION_TYPE_LABELS[item.type]}</span>
                 <span>v{item.version}</span>
                 {item.isAmendment && (
                   <Chip tone="info">

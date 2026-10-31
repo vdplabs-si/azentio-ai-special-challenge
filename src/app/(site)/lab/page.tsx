@@ -5,7 +5,6 @@ import { LAB } from "@/content/site";
 import { CTASection } from "@/components/site/cta-section";
 import { CtaLink } from "@/components/site/cta-link";
 import { PageHero } from "@/components/site/page-hero";
-import { Reveal } from "@/components/site/reveal";
 import { SectionHeader } from "@/components/site/section-header";
 import { pageMetadata } from "@/components/site/seo";
 
@@ -41,7 +40,7 @@ export default function LabPage() {
   const sandbox = AI_OFFERINGS.filter((o) => o.sandbox);
   return (
     <>
-      <PageHero eyebrow={LAB.eyebrow} title={LAB.title} description={<p>{LAB.lead}</p>} art="orbit">
+      <PageHero eyebrow={LAB.eyebrow} title={LAB.title} description={<p>{LAB.lead}</p>} scene="lab">
         <CtaLink href="/login" variant="green">
           Sign in to the portal
         </CtaLink>
@@ -53,17 +52,14 @@ export default function LabPage() {
       <section aria-labelledby="inside-heading" className="bg-white py-16 sm:py-20">
         <div className="container-page flex flex-col gap-10">
           <SectionHeader id="inside-heading" eyebrow="Inside the lab" title="How ideas become working intelligence." />
-          <ol className="grid gap-px overflow-hidden rounded-lg border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
-            {LAB.pillars.map((p, i) => (
+          <ul className="grid gap-px overflow-hidden rounded-[14px] border border-border bg-border md:grid-cols-2 lg:grid-cols-4">
+            {LAB.pillars.map((p) => (
               <li key={p.title} className="flex flex-col gap-3 bg-white p-6">
-                <span aria-hidden="true" className="font-heading text-3xl font-semibold text-success">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="text-lg font-semibold text-brand-ink">{p.title}</h3>
+                <h3 className="type-wide text-lg font-semibold text-brand-ink">{p.title}</h3>
                 <p className="text-sm text-muted-foreground">{p.text}</p>
               </li>
             ))}
-          </ol>
+          </ul>
         </div>
       </section>
 
@@ -76,9 +72,9 @@ export default function LabPage() {
             description="The Lab's hands-on spaces live in the secure portal, not on this public site."
           />
           <ul className="grid gap-5 lg:grid-cols-3">
-            {PORTAL_AREAS.map(({ icon: Icon, title, who, text }, i) => (
+            {PORTAL_AREAS.map(({ icon: Icon, title, who, text }) => (
               <li key={title}>
-                <Reveal delay={i * 0.05} className="h-full">
+                <div className="h-full">
                   <article className="flex h-full flex-col gap-4 rounded-lg border border-border bg-white p-6">
                     <span className="flex size-11 items-center justify-center rounded-lg bg-brand-navy text-brand-green">
                       <Icon aria-hidden="true" className="size-5" />
@@ -89,7 +85,7 @@ export default function LabPage() {
                     </div>
                     <p className="text-sm text-muted-foreground">{text}</p>
                   </article>
-                </Reveal>
+                </div>
               </li>
             ))}
           </ul>

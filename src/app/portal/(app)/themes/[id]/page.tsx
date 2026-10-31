@@ -84,9 +84,9 @@ export default async function ThemePage({ params }: { params: Promise<{ id: stri
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="grid content-start gap-6">
           <section className="rounded-lg border bg-card p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Summary</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground">Summary</h2>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-brand-ink">{t.summary}</p>
-            <h2 className="mt-5 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Limitations</h2>
+            <h2 className="mt-5 text-sm font-semibold text-muted-foreground">Limitations</h2>
             <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-brand-ink">{t.limitations || "No limitations recorded."}</p>
           </section>
 
@@ -104,7 +104,7 @@ export default async function ThemePage({ params }: { params: Promise<{ id: stri
 
         <aside className="grid content-start gap-4">
           <section className="rounded-lg border bg-card p-4">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Relevant offerings</h2>
+            <h2 className="text-xs font-semibold text-muted-foreground">Relevant offerings</h2>
             {t.offerings.length === 0 ? (
               <p className="mt-2 text-sm text-muted-foreground">None linked.</p>
             ) : (
@@ -116,7 +116,7 @@ export default async function ThemePage({ params }: { params: Promise<{ id: stri
             )}
           </section>
           <section className="rounded-lg border bg-card p-4">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Confidence mix</h2>
+            <h2 className="text-xs font-semibold text-muted-foreground">Confidence mix</h2>
             <ul className="mt-2 grid gap-2 text-sm">
               {mix.map(({ c, n }) => (
                 <li key={c}>
@@ -132,7 +132,7 @@ export default async function ThemePage({ params }: { params: Promise<{ id: stri
             </ul>
           </section>
           <section className="rounded-lg border bg-card p-4">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Improvement ideas</h2>
+            <h2 className="text-xs font-semibold text-muted-foreground">Improvement ideas</h2>
             {t.ideas.length === 0 ? (
               <p className="mt-2 text-sm text-muted-foreground">No linked ideas yet.</p>
             ) : (

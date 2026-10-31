@@ -34,7 +34,7 @@ export function CapabilityCard({
   return (
     <article
       className={cn(
-        "group flex h-full flex-col gap-4 rounded-lg border border-border bg-white p-6 transition-colors hover:border-brand-green/60",
+        "group flex h-full flex-col gap-4 rounded-[14px] border border-border bg-white p-6 transition-colors hover:border-brand-green/60",
         className,
       )}
     >

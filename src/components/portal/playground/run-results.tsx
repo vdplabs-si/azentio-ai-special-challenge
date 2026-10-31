@@ -13,7 +13,7 @@ function MetricTile({ m }: { m: Metric }) {
   const Icon = delta > 0 ? ArrowUpRight : delta < 0 ? ArrowDownRight : ArrowRight;
   return (
     <div className="rounded-lg border bg-card p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{m.label}</p>
+      <p className="text-xs font-medium text-muted-foreground">{m.label}</p>
       <p className={cn("mt-1 font-heading font-bold text-brand-ink", m.format === "text" ? "text-base leading-snug" : "text-2xl")}>
         {formatValue(m.value, m.format, m.unit)}
       </p>

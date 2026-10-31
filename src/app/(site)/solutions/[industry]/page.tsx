@@ -9,6 +9,7 @@ import { CTASection } from "@/components/site/cta-section";
 import { CtaLink } from "@/components/site/cta-link";
 import { OfferingCard } from "@/components/site/offering-card";
 import { PageHero } from "@/components/site/page-hero";
+import { INDUSTRY_CLUSTER } from "@/components/three/presets";
 import { SectionHeader } from "@/components/site/section-header";
 import { pageMetadata } from "@/components/site/seo";
 
@@ -45,10 +46,10 @@ export default async function IndustryPage({ params }: Props) {
     <>
       <PageHero
         breadcrumbs={[{ label: "Solutions", href: "/solutions" }, { label: industry.name }]}
-        eyebrow="Solutions"
         title={industry.name}
         description={<p>{industry.tagline}</p>}
-        art="layers"
+        scene="institutions"
+        sceneHighlight={INDUSTRY_CLUSTER[industry.slug] ?? -1}
       >
         <CtaLink href="/connect?interest=general" variant="green">
           Request a demo

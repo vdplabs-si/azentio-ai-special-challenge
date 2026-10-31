@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "azentio.ai — Build Intelligence. Create Impact.";
+export const alt = "azentio.ai — Credit and risk AI that learns with you";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -60,9 +60,9 @@ export default function OpengraphImage() {
             <span>o</span>
             <span style={{ color: GREEN }}>.ai</span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", fontSize: 68, fontWeight: 700, lineHeight: 1.05, letterSpacing: -2 }}>
-            <span>Build Intelligence.</span>
-            <span style={{ color: GREEN }}>Create Impact.</span>
+          <div style={{ display: "flex", flexDirection: "column", fontSize: 62, fontWeight: 700, lineHeight: 1.05, letterSpacing: -2 }}>
+            <span>Credit and risk AI that</span>
+            <span>learns with you.</span>
           </div>
           <div style={{ display: "flex", fontSize: 28, color: "#cbd5e1", lineHeight: 1.35 }}>
             Enterprise AI for banking, insurance, capital markets and ERP.

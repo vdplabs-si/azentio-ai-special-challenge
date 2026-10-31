@@ -35,7 +35,7 @@ export default async function HackathonRegisterPage({ searchParams }: Props) {
             ideas into working prototypes. Register your interest in an open hackathon below.
           </p>
         }
-        art="orbit"
+        scene="lab"
       />
 
       <section aria-labelledby="events-heading" className="bg-white py-16 sm:py-20">
