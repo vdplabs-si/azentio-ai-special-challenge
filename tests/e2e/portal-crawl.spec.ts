@@ -34,7 +34,8 @@ async function portalLinks(page: Page) {
 
 for (const [persona, email] of Object.entries(USERS)) {
   test(`${persona}: every reachable portal page renders cleanly`, async ({ page }) => {
-    test.setTimeout(300_000);
+    // next dev compiles each route on first visit; the admin persona reaches ~50 of them.
+    test.setTimeout(process.env.E2E_SERVER === "dev" ? 900_000 : 300_000);
     const problems: string[] = [];
     let current = "/login";
     watch(page, problems, () => current);
