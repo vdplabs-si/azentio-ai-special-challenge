@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
+// HTTPS-only directives follow the public origin (like the Secure cookies in src/lib/auth/cookie-policy.ts).
+// Unknown origin at build time → assume HTTPS. A plain-HTTP loopback build (local `next start`, e2e)
+// must not send them: upgrade-insecure-requests would rewrite redirects to https://localhost.
+const servesHttps = isProd && !(process.env.AUTH_URL ?? "https://").startsWith("http://");
 
 // Video embeds are limited to YouTube (privacy-enhanced) and Vimeo; everything else is same-origin.
 const csp = [
@@ -15,7 +19,7 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self' https://accounts.google.com https://github.com",
   "object-src 'none'",
-  ...(isProd ? ["upgrade-insecure-requests"] : []),
+  ...(servesHttps ? ["upgrade-insecure-requests"] : []),
 ].join("; ");
 
 const securityHeaders = [
@@ -24,7 +28,7 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
-  ...(isProd ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }] : []),
+  ...(servesHttps ? [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }] : []),
 ];
 
 const nextConfig: NextConfig = {
