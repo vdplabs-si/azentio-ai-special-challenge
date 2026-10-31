@@ -2,6 +2,6 @@
 
 import { RouteError } from "@/components/portal/dashboard/route-error";
 
-export default function PortalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  return <RouteError error={error} retry={reset} />;
+export default function PortalError({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+  return <RouteError error={error} retry={retry} />;
 }

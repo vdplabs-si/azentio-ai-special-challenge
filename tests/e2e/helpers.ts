@@ -26,8 +26,9 @@ export async function apiLogin(request: APIRequestContext, baseURL: string, emai
 export async function uiLogin(page: Page, email: string) {
   await page.goto("/login");
   await page.getByRole("tab", { name: "Password" }).click();
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(PASSWORD);
+  // Role + exact name: the "Email code" and "Password" tab panels carry the same labels.
+  await page.getByRole("textbox", { name: "Email", exact: true }).fill(email);
+  await page.getByRole("textbox", { name: "Password", exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Sign in" }).click();
   await page.waitForURL(/\/portal/);
 }

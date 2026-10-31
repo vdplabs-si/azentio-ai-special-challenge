@@ -11,7 +11,7 @@ export function RouteError({ error, retry, title = "This page could not be loade
   }, [error]);
   const digest = error instanceof Error ? (error as Error & { digest?: string }).digest : undefined;
   return (
-    <div role="alert" className="mx-auto mt-10 flex max-w-lg flex-col items-center rounded-lg border bg-card px-6 py-10 text-center">
+    <div role="alert" data-route-error className="mx-auto mt-10 flex max-w-lg flex-col items-center rounded-lg border bg-card px-6 py-10 text-center">
       <AlertTriangle className="mb-3 size-8 text-warning" aria-hidden />
       <h2 className="text-lg font-semibold text-brand-ink">{title}</h2>
       <p className="mt-1 text-sm text-muted-foreground">

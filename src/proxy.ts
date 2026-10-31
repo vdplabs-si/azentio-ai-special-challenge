@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-
-const SESSION_COOKIE = process.env.NODE_ENV === "production" ? "__Host-az_session" : "az_session";
+import { SESSION_COOKIE } from "@/lib/auth/cookie-policy";
 
 /**
  * Fast-path redirect for signed-out visitors. This is a UX convenience only — every

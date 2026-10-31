@@ -38,7 +38,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...INDUSTRIES.map((i) => ({ url: `${BASE}/solutions/${i.slug}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.7 })),
   ];
 
-  // Public, published insights. Optional: the sitemap must still build when no database is reachable.
+  // Public, published insights. Skipped while `next build` prerenders (the build never needs the
+  // database); the hourly revalidation adds them at runtime.
+  if (process.env.NEXT_PHASE === "phase-production-build") return entries;
   let timer: ReturnType<typeof setTimeout> | undefined;
   try {
     const { listPublicInsightSlugs } = await import("@/server/services/public-content");

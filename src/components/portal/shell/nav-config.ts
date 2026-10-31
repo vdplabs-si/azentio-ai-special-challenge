@@ -4,22 +4,30 @@ import type { SerializedActor } from "@/lib/authz/serialize";
  * Portal navigation. Visibility here is presentation only — every page and API enforces
  * the same rules server-side (src/lib/authz). Icons are lucide names resolved in the sidebar.
  */
+/** Serialisable link handed to the client sidebar/header (no functions). */
 export interface NavItem {
   href: string;
   label: string;
   icon: string;
-  visible?: (a: SerializedActor) => boolean;
 }
 export interface NavSection {
   label: string;
   items: NavItem[];
+}
+/** Server-side config entry; `visible` never leaves the server. */
+interface NavItemConfig extends NavItem {
+  visible?: (a: SerializedActor) => boolean;
+}
+interface NavSectionConfig {
+  label: string;
+  items: NavItemConfig[];
 }
 
 const has = (a: SerializedActor, role: string) => (a.roles as string[]).includes(role);
 const admin = (a: SerializedActor) => has(a, "PORTAL_ADMIN") || has(a, "SUPER_ADMIN");
 const participant = (a: SerializedActor) => a.isEmployee || a.memberships.some((m) => m.type === "CLIENT");
 
-export const NAV: NavSection[] = [
+const NAV: NavSectionConfig[] = [
   {
     label: "Overview",
     items: [
@@ -102,6 +110,10 @@ export const SEGMENT_LABELS: Record<string, string> = {
   reports: "Reports",
 };
 
+/** Filters by persona and strips `visible`, so the result can cross the server→client boundary. */
 export function visibleNav(actor: SerializedActor): NavSection[] {
-  return NAV.map((s) => ({ ...s, items: s.items.filter((i) => !i.visible || i.visible(actor)) })).filter((s) => s.items.length);
+  return NAV.map((s) => ({
+    label: s.label,
+    items: s.items.filter((i) => !i.visible || i.visible(actor)).map(({ href, label, icon }) => ({ href, label, icon })),
+  })).filter((s) => s.items.length);
 }

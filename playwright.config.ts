@@ -4,27 +4,29 @@ import { defineConfig, devices } from "@playwright/test";
 // database in E2E_DATABASE_URL (use a separate schema, e.g. `?schema=e2e&sslmode=require`).
 const port = Number(process.env.E2E_PORT ?? 3100);
 const baseURL = `http://localhost:${port}`;
+// E2E_SERVER=dev runs against `next dev` (surfaces hydration and React warnings as console errors).
+const dev = process.env.E2E_SERVER === "dev";
 
 export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: false,
   workers: 1,
-  timeout: 60_000,
+  timeout: process.env.E2E_SERVER === "dev" ? 180_000 : 60_000,
   retries: 0,
   reporter: [["list"]],
   globalSetup: "./tests/e2e/global-setup.ts",
   use: { baseURL, trace: "retain-on-failure" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: `npx next start -p ${port}`,
+    command: dev ? `npx next dev -p ${port}` : `npx next start -p ${port}`,
     url: `${baseURL}/api/health`,
     reuseExistingServer: false,
-    timeout: 120_000,
+    timeout: dev ? 300_000 : 120_000,
     env: {
       DATABASE_URL: process.env.E2E_DATABASE_URL ?? process.env.DATABASE_URL ?? "",
       AUTH_URL: baseURL,
       AUTH_SECRET: process.env.AUTH_SECRET ?? "e2e-only-secret-not-for-production-use-000000",
-      NODE_ENV: "production",
+      NODE_ENV: dev ? "development" : "production",
     },
   },
 });

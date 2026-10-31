@@ -8,7 +8,7 @@ import { ctaClasses } from "@/components/site/cta-link";
 /** Error boundary for public pages (e.g. the database is temporarily unreachable). */
 export default function SiteError({ retry }: { error: unknown; retry: () => void }) {
   return (
-    <section className="flex flex-1 items-center bg-brand-light py-20 sm:py-24">
+    <section data-route-error className="flex flex-1 items-center bg-brand-light py-20 sm:py-24">
       <div className="container-page flex flex-col items-center gap-6 text-center">
         <span className="flex size-14 items-center justify-center rounded-full bg-brand-navy text-brand-green">
           <TriangleAlert aria-hidden="true" className="size-6" />

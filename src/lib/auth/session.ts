@@ -3,9 +3,9 @@ import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 import { randomToken, sha256 } from "@/lib/crypto";
 
-const isProd = process.env.NODE_ENV === "production";
-/** `__Host-` prefix pins the cookie to this host, path "/" and HTTPS in production. */
-export const SESSION_COOKIE = isProd ? "__Host-az_session" : "az_session";
+import { SECURE_COOKIES, SESSION_COOKIE } from "@/lib/auth/cookie-policy";
+
+export { SESSION_COOKIE };
 const SESSION_DAYS = 30;
 const SLIDE_AFTER_MS = 24 * 60 * 60 * 1000;
 
@@ -25,7 +25,7 @@ export async function createSession(userId: string, opts: { activeOrganisationId
   const jar = await cookies();
   jar.set(SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: isProd,
+    secure: SECURE_COOKIES,
     sameSite: "lax",
     path: "/",
     expires: expiresAt,

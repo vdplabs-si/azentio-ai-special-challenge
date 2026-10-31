@@ -41,6 +41,11 @@ function load() {
     if (!sslmode || !["require", "verify-ca", "verify-full"].includes(sslmode)) {
       throw new Error("DATABASE_URL must use TLS in production (add ?sslmode=require).");
     }
+    // Secure cookies follow AUTH_URL (src/lib/auth/cookie-policy.ts); only loopback may be plain HTTP.
+    const origin = new URL(env.AUTH_URL);
+    if (origin.protocol !== "https:" && !["localhost", "127.0.0.1", "[::1]"].includes(origin.hostname)) {
+      throw new Error("AUTH_URL must be an https:// URL in production.");
+    }
   }
   return env;
 }
